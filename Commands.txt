@@ -56,3 +56,7 @@ get-help Get-Service -Examples
 get-help Get-Service -Online
 get-alias
 get-alias cls
+---
+ Get-PSDrive -PSProvider FileSystem
+ Get-Service | where Status -EQ "rUNNING"  | Out-GridView
+ Get-Service | where Status -EQ "STOPPED"  | Out-GridView
