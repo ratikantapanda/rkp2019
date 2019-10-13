@@ -20,14 +20,20 @@ help > file.txt
 doskey /history of F7
 prompt /?
 prompt $T $B $P$General
+systeminfo
 
 -------
-systeminfo
+BEST COMMANDS FOR HACKING
+---
+ipconfig/all => SEE YOUR IP,GATEWAY,DNS AND OTHER INFO
 ipconfig | find "IPv"
-ping
-tracert - trace route
-nslookup- dns/ ip lookup
+ping -> KNOW IP ADDRESS OF ANY WEBSITE
+tracert - trace route => DISPLAYING THE ROUTE PATH BETWEEN YOUR COMPUTER TO WEBSITE
+nslookup-> RESOLVING DNS INTO IP
 netstat 
+netstat -an => SEE CONNECTION STATUS
+arp -a => SHOW THE ARP TABLE
+route print => ROUTING TABLE, GATEWAY INTERFACE AND METRIC
 psexec remote pc
 ---------------------------
 Firewall - How to check firewall enabled or not ?
@@ -37,3 +43,16 @@ or goto controlpanesl=>system and security
 ----------------------------------------
 Digital Crtificate and Trust store and check private key public key signatures
 mmc - microsoft managment control
+
+===================
+Power-shell
+---------
+Start-Transcript
+Get-Command
+Get-Command -Noun Service
+Get-Service
+Get-help Get-Service
+get-help Get-Service -Examples
+get-help Get-Service -Online
+get-alias
+get-alias cls
