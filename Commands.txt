@@ -5,6 +5,10 @@ Registry Editor
 Control Panel
 Window Key
 CMD Prompt - Normal and Admin Consol
+Admin command
+-----------
+sfc - system file checker
+sfc /scannow
 
 General
 -----------
