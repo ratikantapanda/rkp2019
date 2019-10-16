@@ -60,3 +60,5 @@ get-alias cls
  Get-PSDrive -PSProvider FileSystem
  Get-Service | where Status -EQ "rUNNING"  | Out-GridView
  Get-Service | where Status -EQ "STOPPED"  | Out-GridView
+---
+Test-NetConnection  -ComputerName] "comp1.cn"  -Port 443   -InformationLevel "Detailed"
