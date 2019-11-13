@@ -1,0 +1,237 @@
+https://www.softwaretestinghelp.com/50-popular-sql-interview-questions-for-testers/
+https://www.geeksforgeeks.org/sql-sub-queries-clause/
+http://sqlfiddle.com/#!18/5298b/2
+http://www.mysqltutorial.org/stored-procedures-loop.aspx
+https://academy.vertabelo.com/blog/18-best-online-resources-for-learning-sql-and-database-concepts/
+
+
+
+
+CREATE TABLE MY_EMP (
+    eid int NOT NULL,
+	name varchar(255),
+    salary int,
+	mid int
+);
+
+INSERT INTO MY_EMP (eid,name,salary,mid) VALUES (10,'pkp',100,NULL);
+INSERT INTO MY_EMP (eid,name,salary,mid) VALUES (11,'dkp',180,10);
+INSERT INTO MY_EMP (eid,name,salary,mid) VALUES (12,'rkp',190,10);
+INSERT INTO MY_EMP (eid,name,salary,mid) VALUES (13,'sandhya',155,11);
+INSERT INTO MY_EMP (eid,name,salary,mid) VALUES (14,'diptesh',120,11);
+INSERT INTO MY_EMP (eid,name,salary,mid) VALUES (15,'ritesh',134,11);
+INSERT INTO MY_EMP (eid,name,salary,mid) VALUES (16,'gayatri',185,12);
+INSERT INTO MY_EMP (eid,name,salary,mid) VALUES (17,'ankit',189,12);
+INSERT INTO MY_EMP (eid,name,salary,mid) VALUES (18,'urmila',181,10);
+
+CREATE TABLE EMP (
+    emp_id int NOT NULL,
+	emp_name varchar(255),
+	address varchar(255)
+);
+INSERT INTO EMP (emp_id,emp_name,address) VALUES (10,'pkp','delhi');
+INSERT INTO EMP (emp_id,emp_name,address) VALUES (11,'akp','delhi');
+INSERT INTO EMP (emp_id,emp_name,address) VALUES (12,'dkp','kolkata');
+INSERT INTO EMP (emp_id,emp_name,address) VALUES (13,'rkp','kolkata');
+INSERT INTO EMP (emp_id,emp_name,address) VALUES (14,'ukp','bangalore');
+
+CREATE TABLE DEP (
+     dept_id int NOT NULL,
+	dept_name varchar(255),
+	dept_location,
+	 emp_id int
+);
+INSERT INTO DEP (dept_id,dept_name,dept_location,emp_id) VALUES (1,'math','delhi',10);
+INSERT INTO DEP (dept_id,dept_name,dept_location,emp_id) VALUES (2,'comp','delhi',11);
+INSERT INTO DEP (dept_id,dept_name,dept_location,emp_id) VALUES (3,'history','bbsr',13);
+INSERT INTO DEP (dept_id,dept_name,dept_location,emp_id) VALUES (4,'english','kolkata',14);
+CREATE TABLE STUDY (
+     s_id int NOT NULL,
+	 c_id int NOT NULL,
+	since int
+);
+insert into STUDY (s_id ,c_id ,since) values(10,101,2016);
+insert into STUDY (s_id ,c_id ,since) values(11,102,2014);
+insert into STUDY (s_id ,c_id ,since) values(10,102,2017);
+
+=============================================
+# Joins
+-Cross join
+- Natural join
+- Conditional join
+- Equi join
+-Self join
+- Outer join - left, right, full
+=============================================
+# Natural join
+---------------------------------------------------
+1- Employee details working in math dept.
+-----------
+SELECT * FROM EMP, DEP
+where DEP.dept_name='math' and EMP.emp_id=DEP.emp_id
+Employees working in depts
+------------------------------
+select emp_name, dept_name from EMP, DEP
+where EMP.emp_id=DEP.emp_id
+select emp_name, dept_name from EMP NATURAL JOINN DEP
+
+select emp_name, dept_name from EMP INNER JOIN DEP ON EMP.emp_id=DEP.emp_id
+# Equi join
+----------------------------------------------------------------------
+1- Find the employee name who worked in a department having location same in emp home town.
+--
+select empname from EMP, DEPT
+where emp.eid=dept.eid
+and emp.address=dept.location
+
+# Self join
+-------------------------------------------------------------
+1- Employee and manager name
+select e.name as employee, m.name as manager from MY_EMP e, MY_EMP m where e.mid=m.eid
+--
+2- Employee who are manager
+select  distinct e.name "Managers", e.eid from MY_EMP e, MY_EMP m where e.eid=m.mid
+--
+3- Customers from same city
+--
+4- Find student ids who is enrolled in ate least two cources.
+select t1.s_id 
+from Study t1, Study t2 
+where t1.s_id=t2.s_id and t1.c_id<>t2.c_id
+
+5- Find students who are not enrolled for any course
+-----------------------------------------------------
+SELECT s.name,s.sid FROM STUDENTS s
+LEFT JOIN ENROLLMENT e ON s.sid = e.sid
+WHERE e.sid IS NULL
+
+
+3 - Max salary person name
+-------------------------
+select name,MAX(salary) as salary from MY_EMP;
+select name, salary from MY_EMP e1
+where 1=( select count(distinct salary) from MY_EMP e2 where e2.salary > e1.salary)
+-
+SELECT TOP (1) sal FROM emp order by Sal desc
+--
+SELECT TOP (1) sal FROM
+(
+    SELECT DISTINCT TOP (4) sal FROM EMP ORDER BY sal DESC
+) AS Emp ORDER BY sal
+4- Top 3
+------------
+SELECT TOP 3 * FROM Customers;
+5-
+--------------------
+SELECT mid , COUNT(*) REPORTING from MY_EMP
+group by mid
+Having COUNT(*) >1
+-
+SELECT mid, Count(*) FROM MY_EMP
+GROUP by mid
+6- Select manager's
+--------------
+select * from MY_EMP 
+where eid IN (SELECT mid FROM MY_EMP GROUP by mid)
+
+7- max salary dept wiese
+-------------------------
+SELECT DeptID, MAX(Salary) FROM Employee  GROUP BY DeptID. 
+SELECT mid, max(salary) FROM MY_EMP GROUP by mid
+-
+SELECT DeptID, MAX(Salary) FROM Employee  GROUP BY DeptID. 
+SELECT DeptName, MAX(Salary) FROM Employee e RIGHT JOIN Department d ON e.DeptId = d.DeptID GROUP BY DeptName;
+7- name of employee having max salary dept wise
+---------------------------------------------------
+select name from MY_EMP where salary IN(
+SELECT max(salary) FROM MY_EMP GROUP by mid)
+---------------------------
+Identify dulicate rows and delete duplicate rows
+---
+SELECT * FROM emp a WHERE rowid = (SELECT MAX(rowid) FROM EMP b WHERE a.empno=b.empno)
+
+to Delete:
+DELETE FROM emp a WHERE rowid != (SELECT MAX(rowid) FROM emp b WHERE a.empno=b.empno);
+==========================================================================
+https://www.java67.com/2013/04/10-frequently-asked-sql-query-interview-questions-answers-database.html
+Question 12: There is a table which contains two column Student and Marks, 
+you need to find all the students, whose marks are greater than average marks i.e. list of above average students.
+Answer: This query can be written using subquery as shown below:
+SELECT student, marks from table where marks > SELECT AVG(marks) from table)
+
+==========================================================================
+
+---------------------------
+Stored procedure
+------------------------
+CREATE PROCEDURE sp
+AS 
+SELECT * FROM Students
+GO
+EXECUTE sp
+---
+dynamic sql execution - EXEC sp_executesql N'SELECT * FROM Students';
+--
+DECLARE 
+    @table NVARCHAR(128),
+    @sql NVARCHAR(MAX);
+SET @table = N'STUDENTS';
+SET @sql = N'SELECT * FROM ' + @table;
+EXEC sp_executesql @sql
+------------
+CREATE PROCEDURE HelloWorldprocedure
+AS
+PRINT 'Hello World'
+--
+CREATE FUNCTION dbo.helloworldfunction()
+RETURNS varchar(20)
+AS 
+BEGIN
+	 RETURN 'Hello world'
+END
+----------
+CREATE PROCEDURE MP
+AS 
+BEGIN
+SELECT * FROM STUDENTS
+END
+GO
+EXEC MP
+
+===============================
+CREATE TABLE EMP (
+    eid int NOT NULL,
+	did int NOT NULL,
+	name varchar(255),
+	sal int
+	
+);
+INSERT INTO EMP (eid,did,name,sal) VALUES (101,11,'rkp',1000);
+INSERT INTO EMP (eid,did,name,sal) VALUES (102,11,'dkp',1005);
+INSERT INTO EMP (eid,did,name,sal) VALUES (103,12,'pkp',1004);
+INSERT INTO EMP (eid,did,name,sal) VALUES (104,13,'tkp',1004);
+
+
+CREATE TABLE DEP (
+     did int NOT NULL,
+	name varchar(255),
+	 eid int
+);
+INSERT INTO DEP (did,name,eid) VALUES (11,'math',11);
+INSERT INTO DEP (did,name,eid) VALUES (12,'compsc',11);
+INSERT INTO DEP (did,name,eid) VALUES (13,'eng',11);
+INSERT INTO DEP (did,name,eid) VALUES (14,'history');
+INSERT INTO DEP (did,name,eid) VALUES (15,'geo');
+max salary dept wise and dept name
+--------------------------------------
+select max(e.sal) as MAX_SAL
+from Emp e GROUP BY e.did
+-
+select e.did, max(e.sal) as MAX_SAL
+from Emp e GROUP BY e.did
+-
+select d.name, max(e.sal) as MAX_SAL
+from Emp e INNER JOIN Dep d ON e.did = d.did GROUP BY d.name;
+-
+select d.name, max(e.sal) as MAX_SAL
+from Emp e RIGHT JOIN Dep d ON e.did = d.did GROUP BY d.name;
