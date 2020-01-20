@@ -1,0 +1,32 @@
+OOPs Concepts & Patterns
+Abstract Classes and Interfaces
+Constructors
+File IO and Serialization
+Collections - List , Map , Set
+Access Specifiers
+Exceptions - Checked , Unchecked
+Generics
+Java Keywords - Static, Final, volatile, synchronized, transient, this super etc.
+JVM and Memory Management
+Multithreading and Synchronization
+Dependency Injection
+. 
+If He has to be hired for a network / distributed application, he should have the following skills -
+
+Knowledge of Protocols like IP, HTTP, TCP, FTP,UDP Sockets , RMI , RCP
+
+If he is to be hired for a Java based web application. he should know -
+JSP / Servlets,Web Frameworks like Struts / Spring
+Service Oriented Architecture / Web Services - SOAP / REST
+Web Technologies like HTML, CSS, Javascript and JQuery
+Markup Languages like XML and JSON
+if someone has to work on Java UI, then he should know -
+
+Applets
+Frameworks like Swing, SWT, AWT, JavaFX (SWT only if you’re building something on top of Eclipse)
+
+Every Java Developer is expected to have Database Knowledge so he should know -
+SQL Queries - Inner Outer Joins, Group By , Having,Stored Procedures,Triggers,Cursors
+Build tools like Maven and Gradle. An IDE like Intellij IDEA or Eclipse.
+Unit testing tools like JUnit and Spock, and unit testing strategies.
+

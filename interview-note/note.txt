@@ -1,0 +1,20 @@
+java
+========
+https://github.com/javacreed
+
+python:-
+=============
+what are the most important programming concepts in python to learn.
+
+https://www.quora.com/What-are-the-most-important-topics-to-learn-in-Python
+
+c++
+----------
+https://msdn.microsoft.com/en-us/library/wwywka61.aspx
+ds:-
+---------
+https://www.youtube.com/user/tusharroy2525
+https://www.youtube.com/channel/UCx-kFfzekMbhODaBss-ZnsA
+http://www.techiedelight.com/list-of-problems/
+https://www.youtube.com/channel/UC0RhatS1pyxInC00YKjjBqQ
+
