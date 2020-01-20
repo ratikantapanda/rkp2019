@@ -1,0 +1,101 @@
+#include <iostream>
+#include <algorithm>
+#include <vector>
+
+using namespace std;
+
+//Function object that add the value with wich it is initialized.
+template<typename T>
+struct  AddValue
+{
+	T val;
+	AddValue(const T& val):val(val){}
+	void operator()(T& elem)
+	{
+		elem += val;
+	}
+};
+struct MeanValue
+{
+	int num;
+	long  sum;
+	MeanValue():num(0),sum(0){}
+	//function call
+	void  operator()(int elem)
+	{
+		num=num+1;
+		sum = sum + elem;
+	}
+	//return mean value(implicit type conversion)
+	operator double()
+	{
+		return static_cast<double>(sum)/static_cast<double>(num);
+	}
+};
+
+
+int main()
+{
+	std::vector<int> v1={1,2,3,4};
+	//print elements
+	std::for_each(v1.cbegin(),v1.cend(),[](int elem){ cout << elem << ' ' ;});
+	cout << '\n';
+	//add 10 to each element
+	std::for_each(v1.begin(),v1.end(),[](int& elem){ elem +=10; });
+	std::for_each(v1.begin(),v1.end(),AddValue<int>(10));
+	for(const auto& elem:v1)
+	{
+		std::cout << elem << ' ';
+	}
+	cout << '\n';
+	// add value of first element to each element.
+	//std::for_each(v1.begin(),v1.end(),[&](int& elem){ elem +=*v1.begin();});
+	std::for_each(v1.begin(),v1.end(),[=](int& elem){ elem +=*v1.begin();});
+	std::for_each(v1.begin(),v1.end(),AddValue<int>(*v1.begin()));
+	for(const auto& elem:v1)
+	{
+		std::cout << elem << ' ';
+	}
+	cout << '\n';
+	std::vector<int> v2= { 1,2,3,4};
+	//add 10 to each element.
+	std::transform(v2.begin(),v2.end(),v2.begin(),[](int elem){ return elem +10;});
+	 for(const auto& elem:v2)
+        {
+                std::cout << elem << ' ';
+        }
+	cout << '\n';
+	std::transform(v2.begin(),v2.end(),v2.begin(),[=](int & elem){ return elem + *v2.begin();});
+	 for(const auto& elem:v2)
+        {
+                std::cout << elem << ' ';
+        }
+	cout << '\n';
+	//Mean value of a container
+	// lambda is not necessarily better, because a finction object encapsulate both sum as internal state.
+	std::vector<int> v3={1,2,3,4};
+	double result1=std::for_each(v3.begin(),v3.end(),MeanValue());
+	std::cout << result1 << std::endl;
+
+	//negate all element
+	std::transform(v3.begin(), v3.end(),v3.begin(),std::negate<int>());
+	for(const auto& elem:v3)
+        {
+                std::cout << elem << ' ';
+        }
+	cout << '\n';
+
+	std::vector<int> v4={1,2,3,4};
+	std::vector<int> v5;
+	std::transform(v4.begin(),v4.end(),
+			std::back_inserter<int>(v5),
+			[](int elem){ return elem*10;});
+	for(const auto& elem:v5)
+        {
+                std::cout << elem << ' ';
+        }
+	cout << '\n';
+
+
+	return 0;
+}

@@ -1,0 +1,51 @@
+/*
+ * deep copy
+//==============
+Copy a smart pointer with its polymorphic behaviour.
+Avoid object slicing by implementing clone a virtual constructor.
+
+shared_ptr<Base> sp1(new Derived());
+shared_ptr<Base> sp2(sp1); //Object slicing will happen without any error.
+shared_ptr<Base> sp2(sp1->clone());
+
+class AbstractBase
+{
+  ...
+  virtual Base* Clone() = 0;
+};
+
+class Concrete : public AbstractBase
+{
+  ...
+  virtual Base* Clone()
+  {
+    return new Concrete(*this);
+  }
+};
+//=====================================
+COW:- Copy on write
+======================================
+COW is an optimization technique that avoids unnecessary object copying.
+Smart pointers, however, are not the best place to implement COW, because smart pointers cannot
+differentiate between calls to const and non-const member functions of the pointee object. Here is an
+example:
+template <class T>
+class SmartPtr
+{
+public:
+T* operator->() { return pointee_; }
+...
+};
+class Foo
+{
+public:
+void ConstFun() const;
+void NonConstFun();
+};
+...
+SmartPtr<Foo> sp;
+sp->ConstFun(); // invokes operator->, then ConstFun
+sp->NonConstFun(); // invokes operator->, then NonConstFun
+shared_pointer:- Ownership managment and reference count
+*/
+

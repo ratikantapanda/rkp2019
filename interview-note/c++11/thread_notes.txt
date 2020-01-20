@@ -1,0 +1,12 @@
+q1- When two thread access a code at the same time , what happen?How it prevented?
+Ans:- data race condition, impact- value of the varibale may be unprdictable
+      Prevention- use thread synchronization techniqueue like - mutex(lock) or semaphor.
+	It ensure that two or more concurrent programs or threads do not simulteneously execute same
+	program segment.
+q2- Mutex vs Semaphore ?
+ Ans:- Mutex is locking mechanism.It lock a shared resource.
+       Semaphore is signaling mechanism.Semaphore control access to shared resources  through the use of counter.
+       If counter is greater than zero , the access is allowed and if it is zero , then access is denied.
+       Binary semaphore(0,1) are used like mutex.
+
+q3- What is dead lock, how to prevent dead lock?
