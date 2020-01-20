@@ -1,0 +1,661 @@
+####################################################
+Thread function- functor and lamda
+###################################################
+#include <iostream>
+int main ()
+{
+  std::cout << "Hello World\n";
+}
+
+
+//------------------------
+#include <iostream>
+#include <thread>
+void hello ()
+{
+  std::cout << "Hello Concurrent World\n";
+}
+
+int main ()
+{
+  std::thread t (hello);
+  t.join ();
+}
+
+
+//----------------------
+Note-1:- only one function
+void f();
+std::thread t(f);
+//-------------------------
+
+Note-2:-  more than one function
+class background_task
+{
+public:
+  void operator () () const
+  {
+    do_something ();
+    do_something_else ();
+  }
+};
+background_task f;
+std::thread t(f);
+
+
+//---------------------------------
+std::thread my_thread(background_task());
+std::thread my_thread((background_task()));
+std::thread my_thread{background_task()};
+//---------------------------------------
+std::thread my_thread([]{
+do_something();
+do_something_else();
+});
+#########################################################
+
+Thread managment:- join and detach
+##########################################################
+1.passing argument to an thread function
+-----------------------------------------
+struct func
+{
+  int &i;
+  func (int &i_):i (i_){}
+  void operator () ()
+  {
+    for (unsigned j = 0; j < 1000000; ++j)
+      {
+	do_something (i);
+      }
+  }
+};
+
+//Do not share local pointer or reference to a thread,if you are not waiting for the thred.
+void oops ()
+{
+  int some_local_state = 0;
+  func my_func (some_local_state);
+  std::thread my_thread (my_func);
+  my_thread.detach ();
+}
+
+//if the thread is not join() and detach() before exit
+//then std::thread destruction can terminate the main appplication calling std::thread()
+struct func;
+void f ()
+{
+  int some_local_state = 0;
+  func my_func (some_local_state);
+  std::thread t (my_func);
+  try
+  {
+    do_something_in_current_thread ();
+  }
+  catch (...)
+  {
+    t.join ();
+    throw;
+  }
+  t.join ();
+}
+
+class thread_guard
+{
+  std::thread & t;
+public:
+  explicit thread_guard (std::thread & t_):t (t_){}
+   ~thread_guard ()
+  {
+    if (t.joinable ())
+      {
+	t.join ();
+      }
+  }
+  thread_guard (thread_guard const &) = delete;
+  thread_guard & operator= (thread_guard const &) = delete;
+};
+struct func;
+void f ()
+{
+  int some_local_state = 0;
+  func my_func (some_local_state);
+  std::thread t (my_func);
+  thread_guard g (t);
+  do_something_in_current_thread ();
+}
+//-------------------------------------------
+std::thread t(do_background_work);
+t.detach();
+assert(!t.joinable());
+//---------------------------------------------
+void edit_document (std::string const &filename)
+{
+  open_document_and_display_gui (filename);
+  while (!done_editing ())
+    {
+      user_command cmd = get_user_input ();
+      if (cmd.type == open_new_document)
+	{
+	  std::string const new_name = get_filename_from_user ();
+	  std::thread t (edit_document, new_name);
+	  t.detach ();
+	}
+      else
+	{
+	  process_user_input (cmd);
+	}
+    }
+}
+//---------------------------------
+void f(int i,std::string const& s);
+std::thread t(f,3,”hello”);
+
+void f(int i,std::string const& s);
+void oops (int some_param)
+{
+  char buffer[1024];
+  sprintf (buffer, "%i", some_param);
+  std::thread t (f, 3, buffer);
+  t.detach ();
+}
+
+void f(int i,std::string const& s);
+void not_oops (int some_param)
+{
+  char buffer[1024];
+  sprintf (buffer, "%i", some_param);
+  std::thread t (f, 3, std::string (buffer));
+  t.detach ();
+}
+
+void update_data_for_widget (widget_id w, widget_data & data);
+void oops_again (widget_id w)
+{
+  widget_data data;
+  std::thread t (update_data_for_widget, w, data);
+  display_status ();
+  t.join ();
+  process_widget_data (data);
+}
+
+std::thread t(update_data_for_widget,w,std::ref(data));
+//----------------------------------------------
+class X
+{
+public:
+  void do_lengthy_work ();
+};
+X my_x;
+std::thread t (&X::do_lengthy_work, &my_x);
+//----------------------------------------------
+
+void process_big_object(std::unique_ptr<big_object>);
+std::unique_ptr<big_object> p(new big_object);
+p->prepare_data(42);
+std::thread t(process_big_object,std::move(p));
+
+//----------------------------
+void some_function ();
+void some_other_function ();
+std::thread t1 (some_function);
+std::thread t2 = std::move (t1);
+t1 = std::thread (some_other_function);
+std::thread t3;
+t3 = std::move (t2);
+t1 = std::move (t3);
+//---------------
+std::thread f ()
+{
+  void some_function ();
+  return std::thread (some_function);
+}
+
+std::thread g ()
+{
+  void some_other_function (int);
+  std::thread t (some_other_function, 42);
+  return t;
+}
+
+void f (std::thread t);
+void
+g ()
+{
+  void some_function ();
+  f (std::thread (some_function));
+  std::thread t (some_function);
+  f (std::move (t));
+}
+
+//---------------------------------------
+class scoped_thread
+{
+  std::thread t;
+public:
+  explicit scoped_thread (std::thread t_):
+  t (std::move (t_))
+  {
+    if (!t.joinable ())
+      throw std::logic_error ("No thread");
+  }
+  ~scoped_thread ()
+  {
+    t.join ();
+  }
+  scoped_thread (scoped_thread const &) = delete;
+  scoped_thread & operator= (scoped_thread const &) = delete;
+};
+struct func;
+void f ()
+{
+  int some_local_state;
+  scoped_thread t (std::thread (func (some_local_state)));
+  do_something_in_current_thread ();
+}
+//--------------------------------------
+
+void do_work (unsigned id);
+void f ()
+{
+  std::vector < std::thread > threads;
+  for (unsigned i = 0; i < 20; ++i)
+    {
+      threads.push_back (std::thread (do_work, i));
+    }
+  std::for_each (threads.begin (), threads.end (),
+		 std::mem_fn (&std::thread::join));
+}
+//---------------------------------------
+template < typename Iterator, typename T > struct accumulate_block
+{
+  void operator () (Iterator first, Iterator last, T & result)
+  {
+    result = std::accumulate (first, last, result);
+  }
+};
+
+template < typename Iterator, typename T >
+  T parallel_accumulate (Iterator first, Iterator last, T init)
+{
+  unsigned long const length = std::distance (first, last);
+  if (!length)
+    return init;
+  unsigned long const min_per_thread = 25;
+  unsigned long const max_threads = (length + min_per_thread - 1) / min_per_thread;
+  unsigned long const hardware_threads = std::thread::hardware_concurrency ();
+  unsigned long const num_threads = std::min (hardware_threads != 0 ? hardware_threads : 2, max_threads);
+  unsigned long const block_size = length / num_threads;
+  std::vector < T > results (num_threads);
+  std::vector < std::thread > threads (num_threads - 1);
+  Iterator block_start = first;
+  for (unsigned long i = 0; i < (num_threads - 1); ++i)
+    {
+      Iterator block_end = block_start;
+      std::advance (block_end, block_size);
+      threads[i] = std::thread (accumulate_block < Iterator, T > (),
+				block_start, block_end,
+				std::ref (results[i]));
+      block_start = block_end;
+    }
+  accumulate_block < Iterator, T > ()(block_start, last,
+				      results[num_threads - 1]);
+  std::for_each (threads.begin (), threads.end (),
+		 std::mem_fn (&std::thread::join));
+  return std::accumulate (results.begin (), results.end (), init);
+}
+//--------------
+std::thread::id master_thread;
+void some_core_part_of_algorithm ()
+{
+  if (std::this_thread::get_id () == master_thread)
+    {
+      do_master_thread_work ();
+    }
+  do_common_work ();
+}
+
+std::cout<<std::this_thread::get_id();
+#######################################################3333
+Protecting list with -mutex, std::mutex std::lock_guard<std::mutex> lg(mutex);
+################################################
+//------------
+#include <list>
+#include <mutex>
+#include <algorithm>
+std::list < int > some_list;
+std::mutex some_mutex;
+void add_to_list (int new_value)
+{
+  std::lock_guard < std::mutex > guard (some_mutex);
+  some_list.push_back (new_value);
+}
+
+bool list_contains (int value_to_find)
+{
+  std::lock_guard < std::mutex > guard (some_mutex);
+  return std::find (some_list.begin (), some_list.end (), value_to_find)
+    != some_list.end ();
+}
+//wrapped class inplace of global variable
+class thread_safe_list
+{
+  std::list < int >l;
+  std::mutex m;
+public:
+  thread_safe_list ()
+  {
+  }
+  void add_to_list (int value)
+  {
+    std::lock_guard < std::mutex > l (m);
+    l.push_back (value);
+  }
+  bool isValueExist (int value)
+  {
+    std::lock_guard < std::mutex > l (m);
+    return (std::find (l.begin (), l.end (), value) != l.end ());
+  }
+};
+
+Note-1
+If all the member functions of the class lock the mutex before accessing any other data members and unlock it when
+done, the data is nicely protected from all comers.(Not true always).
+If one of the member functions returns a pointer or reference to the protected data, then it
+doesn’t matter that the member functions all lock the mutex in a nice orderly fashion,
+because you’ve just blown a big hole in the protection. Any code that has access to that
+pointer or reference can now access (and potentially modify) the protected data without locking the
+Remember-1:-
+At one level, checking for stray pointers or references is
+easy; as long as none of the member functions return a pointer or reference to the protected
+data to their caller either via their return value or via an out parameter, the data is
+safe.
+Remember-2:-
+It’s also important to check that they don’t pass such pointers or references in to functions
+they call that aren’t under your control. This is just as dangerous: those functions
+might store the pointer or reference in a place where it can later be used without the protection
+of the mutex. Particularly dangerous in this regard are functions that are supplied
+at runtime via a function argument or other means, as in the next listing.
+
+
+class some_data
+{
+  int a;
+  std::string b;
+public:
+  void do_something ();
+};
+
+class data_wrapper
+{
+private:
+  some_data data;
+  std::mutex m;
+public:
+  template < typename Function > void process_data (Function func)
+  {
+    std::lock_guard < std::mutex > l (m);
+    func (data);
+  }
+};
+some_data* unprotected;
+void malicious_function(some_data& protected_data)
+{
+  unprotected = &protected_data;
+}
+data_wrapper x;
+void foo()
+{
+  x.process_data(malicious_function);
+  unprotected->do_something();
+}
+
+=====================================================
+Thread safe stack degin
+======================================================
+template < typename T, typename Container = std::deque < T > >class stack
+{
+public:
+  explicit stack (const Container &);
+  explicit stack (Container && = Container ());
+  template < class Alloc > explicit stack (const Alloc &);
+  template < class Alloc > stack (const Container &, const Alloc &);
+  template < class Alloc > stack (Container &&, const Alloc &);
+  template < class Alloc > stack (stack &&, const Alloc &);
+  bool empty () const;
+  size_t size () const;
+  T & top ();
+  T const & top () const;
+  void push (T const &);
+  void push (T &&);
+  void pop ();
+  void swap (stack &&);
+};
+
+Note:- Not Thread safe code
+stack < int >s;
+if (!s.empty ())
+  {
+    int const value = s.top ();
+    s.pop ();
+    do_something (value);
+  }
+
+  std::vector<int> result;
+  some_stack.pop(result);
+
+  
+-----------------------------------------------
+#include <exception>
+#include <memory>
+struct empty_stack:std::exception
+{
+  const char * what () const throw ();
+};
+template < typename T > class threadsafe_stack
+{
+public:
+  threadsafe_stack ();
+  threadsafe_stack (const threadsafe_stack &);
+  threadsafe_stack & operator= (const threadsafe_stack &) = delete;
+  void push (T new_value);
+  std::shared_ptr < T > pop ();
+  void pop (T & value);
+  bool empty () const;
+};
+#include <exception>
+#include <memory>
+#include <mutex>
+#include <stack>
+struct empty_stack: std::exception
+{
+const char* what() const throw();
+};
+template < typename T > class threadsafe_stack
+{
+private:
+  std::stack < T > data;
+  mutable std::mutex m;
+public:
+  threadsafe_stack ()
+  {
+  }
+  threadsafe_stack (const threadsafe_stack & other)
+  {
+    std::lock_guard < std::mutex > lock (other.m);
+    data = other.data;
+  }
+  threadsafe_stack & operator= (const threadsafe_stack &) = delete;
+  void push (T new_value)
+  {
+    std::lock_guard < std::mutex > lock (m);
+    data.push (new_value);
+  }
+  std::shared_ptr < T > pop ()
+  {
+    std::lock_guard < std::mutex > lock (m);
+    if (data.empty ())
+      throw empty_stack ();
+    std::shared_ptr < T > const res (std::make_shared < T > (data.top ()));
+    data.pop ();
+    return res;
+  }
+  void pop (T & value)
+  {
+    std::lock_guard < std::mutex > lock (m);
+    if (data.empty ())
+      throw empty_stack ();
+    value = data.top ();
+    data.pop ();
+  }
+  bool empty () const
+  {
+    std::lock_guard < std::mutex > lock (m);
+    return data.empty ();
+  }
+};
+==============================
+dead lock
+========================
+
+class some_big_object;
+void swap (some_big_object & lhs, some_big_object & rhs);
+class X
+{
+private:
+  some_big_object some_detail;
+  std::mutex m;
+public:
+  X (some_big_object const &sd):some_detail (sd)
+  {
+  }
+  friend void swap (X & lhs, X & rhs)
+  {
+    if (&lhs == &rhs)
+      return;
+    std::lock (lhs.m, rhs.m);
+    std::lock_guard < std::mutex > lock_a (lhs.m, std::adopt_lock);
+    std::lock_guard < std::mutex > lock_b (rhs.m, std::adopt_lock);
+    swap (lhs.some_detail, rhs.some_detail);
+  }
+};
+
+hierarchical_mutex high_level_mutex (10000);
+hierarchical_mutex low_level_mutex (5000);
+int do_low_level_stuff ();
+int low_level_func ()
+{
+  std::lock_guard < hierarchical_mutex > lk (low_level_mutex);
+  return do_low_level_stuff ();
+}
+void high_level_stuff (int some_param);
+void high_level_func ()
+{
+  std::lock_guard < hierarchical_mutex > lk (high_level_mutex);
+  high_level_stuff (low_level_func ());
+}
+
+void thread_a ()
+{
+  high_level_func ();
+}
+
+hierarchical_mutex other_mutex (100);
+void do_other_stuff ();
+void other_stuff ()
+{
+  high_level_func ();
+  do_other_stuff ();
+}
+
+void thread_b ()
+{
+  std::lock_guard < hierarchical_mutex > lk (other_mutex);
+  other_stuff ();
+}
+
+
+class hierarchical_mutex
+{
+  std::mutex internal_mutex;
+  unsigned long const hierarchy_value;
+  unsigned long previous_hierarchy_value;
+  static thread_local unsigned long this_thread_hierarchy_value;
+  void check_for_hierarchy_violation ()
+  {
+    if (this_thread_hierarchy_value <= hierarchy_value)
+      {
+	throw std::logic_error ("mutex hierarchy violated");
+      }
+  }
+  void update_hierarchy_value ()
+  {
+    previous_hierarchy_value = this_thread_hierarchy_value;
+    this_thread_hierarchy_value = hierarchy_value;
+  }
+public:
+  explicit hierarchical_mutex (unsigned long value):hierarchy_value (value),
+    previous_hierarchy_value (0)
+  {
+  }
+  void lock ()
+  {
+    check_for_hierarchy_violation ();
+    internal_mutex.lock ();
+    update_hierarchy_value ();
+  }
+  void unlock ()
+  {
+    this_thread_hierarchy_value = previous_hierarchy_value;
+    internal_mutex.unlock ();
+  }
+  bool try_lock ()
+  {
+    check_for_hierarchy_violation ();
+    if (!internal_mutex.try_lock ())
+      return false;
+    update_hierarchy_value ();
+    return true;
+  }
+};
+#########################
+Thread-safe lazy initialization using a mutex
+std::shared_ptr<some_resource> resource_ptr;
+std::mutex resource_mutex;
+void foo()
+{
+std::unique_lock<std::mutex> lk(resource_mutex);
+if(!resource_ptr)
+{
+resource_ptr.reset(new some_resource);
+}
+lk.unlock();
+resource_ptr->do_something();
+}
+-----------
+Double-Checked Locking pattern-
+-----------------------
+void undefined_behaviour_with_double_checked_locking()
+{
+if(!resource_ptr)
+{
+std::lock_guard<std::mutex> lk(resource_mutex);
+if(!resource_ptr)
+{
+resource_ptr.reset(new some_resource);
+}
+}
+resource_ptr->do_something();
+}
+------------
+std::shared_ptr<some_resource> resource_ptr;
+std::once_flag resource_flag;
+void init_resource()
+{
+resource_ptr.reset(new some_resource);
+}
+void foo()
+{
+std::call_once(resource_flag,init_resource);
+resource_ptr->do_something();
+}

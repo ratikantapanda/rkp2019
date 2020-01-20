@@ -1,0 +1,120 @@
+Q11.Smart Pointer class interface degin based on RAII
+=====================================================
+RAII:- Resource Acquisition Is Initialization.Life time based resource managment.
+Automatic destruction of the contained object when the pointer goes out of scope
+template <class T> 
+class SmartPtr
+{
+private:
+  T* pointee_; //Wraps raw pointer
+  ...
+public:
+  explicit SmartPtr(T* pointee) : pointee_(pointee){ }
+  SmartPtr& operator=(const SmartPtr& other)
+  {
+     pointee_=other.pointee;
+  }
+  ~SmartPtr()
+  {
+    delete pointee_;
+  }
+  //providing *,-> behave like raw pointer.
+  T& operator*() const
+  {
+    ...
+    return *pointee_;
+  }
+  T* operator->() const
+  {
+    ...
+    return pointee_;
+  }
+
+};
+
+//----------------------------------------------------------
+The std::auto_ptr class template features destructive copy.
+
+template <class T> 
+class SmartPtr
+{
+public:
+  SmartPtr(SmartPtr& src)
+  {
+     pointee_ = src.pointee_;
+     src.pointee_ = 0;
+  }
+  SmartPtr& operator=(SmartPtr& src)
+  {
+     if (this != &src)
+     {
+       delete pointee_;
+       pointee_ = src.pointee_;
+       src.pointee_ = 0;
+     }
+   return *this;
+  }
+...
+};
+
+
+
+1.auto_ptr implementation
+============================
+template<class T> class auto_ptr 
+{
+private:
+  T *pointee;
+  template<class U> friend class auto_ptr<U>;
+
+public:
+  explicit auto_ptr(T *p = 0): pointee(p) {}
+  template<class U> auto_ptr(auto_ptr<U>& rhs): pointee(rhs.release()) {}
+  ~auto_ptr() { delete pointee; }
+  template<class U> auto_ptr<T>& operator=(auto_ptr<U>& rhs)
+  {
+    if (this != &rhs) reset(rhs.release());
+    return *this;
+  }
+  T& operator*() const { return *pointee; }
+  T* operator->() const { return pointee; }
+  T* get() const { return pointee; }
+
+  T* release()
+ {
+    T *tmp = pointee;
+    pointee = 0;
+    return tmp;
+  }
+
+  void reset(T *p = 0)
+  {
+    if (pointee != p)
+	{
+      delete pointee;
+      pointee = p;
+    }
+  }
+};
+
+
+Q:auto_ptr vs unique_ptr
+============================
+http://www.drdobbs.com/cpp/c11-uniqueptr/240002708?token=b6b713322632a0880798a84d66a86e5b
+auto_ptr:-can not store auto_ptr object in most container,where container resized and moved, can be copied.
+unique_ptr:- unique_ptr object can be stored all type of containers,issue is fixed by rvalue reference and move semantics,
+all objects will destroy when container destroy,can not be copied.
+
+bugy code:-
+foo* ptr= new foo("Hello");
+make_use(ptr);
+-----------
+correct way using unique_ptr:-
+std::unique_ptr<foo> ptr=new foo("hi");
+make_use(std::move(ptr));
+---------------
+wrong-compilation error:-
+std::unique_ptr<foo> q( new foo(42) );
+v.push_back( q );
+-----------
+v.push_back(std::move(q)); //correct

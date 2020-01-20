@@ -1,0 +1,76 @@
+1) overloaded operator;
+2) user-defined conversion function;
+3) allocation function;
+4) deallocation function;
+5) user-defined literal.
+
+------------
+
+operator op	
+operator type	
+operator new 
+operator new []	
+operator delete 
+operator delete []
+operator "" suffix-identifier
+
+=======
+Stream extraction and insertion operator
+----------------------------------------
+Since they take the user-defined type as the right argument (b in a@b), 
+they must be implemented as non-members.
+
+friend std::ostream& operator<<(std::ostream& os, const T& obj);
+friend std::istream& operator>>(std::istream& is, T& obj);
+
+std::ostream& operator<<(std::ostream& os, const T& obj)
+{
+    // write obj to stream
+    return os;
+}
+std::istream& operator>>(std::istream& is, T& obj)
+{
+    // read obj from stream
+    if( /* T could not be constructed */ )
+        is.setstate(std::ios::failbit);
+    return is;
+}
+
+Increment and decrement operator:-
+---------------------------------------
+
+struct X
+{
+    X& operator++()
+    {
+        // actual increment takes place here
+        return *this;
+    }
+    X operator++(int)
+    {
+        X tmp(*this); // copy
+        operator++(); // pre-increment
+        return tmp;   // return old value
+    }
+};
+
+Array subscript operator
+----------------------------
+struct T
+{
+          value_t& operator[](std::size_t idx)       { return mVector[idx]; };
+    const value_t& operator[](std::size_t idx) const { return mVector[idx]; };
+};
+
+Function call operator
+-----------------------------------
+When a user-defined class overloads the function call operator, operator(), 
+it becomes a FunctionObject type. Many standard algorithms, from std::sort to std::accumulate accept objects of such types to customize behavior. 
+
+struct Sum
+{
+    int sum;
+    Sum() : sum(0) { }
+    void operator()(int n) { sum += n; }
+};
+Sum s = std::for_each(v.begin(), v.end(), Sum());

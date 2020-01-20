@@ -1,0 +1,76 @@
+Algorithms and complexcity in general
+==========================================
+Time complexcity and space complexcity of an algorithm.
+
+O(1)-> Constant complexity
+O(n)-> Linear complexity
+O(log n) -> Logarithmic complexity
+O(n log n) -> n log n complexity
+O(n^b) -> Polynomial complexity
+O(b^n), b > 1 -> Exponential complexity
+O(n!)-> Factorial complexity
+
+Hight of a binarry tree:-
+----------------------
+1*2*2*2*2*2*2 
+2 is x times.
+2^x = n
+x = log2 n
+
+search:- Linear search and binary search
+=======================================
+Algorithm 1: Linear search
+---------------------------
+Input: unsorted sequence a1, a2, …, an
+position of target value x
+Output: subscript of entry equal to target value; 0 if not found
+
+Initialize: i ← 1
+while (i ≤ n and x != a[i])
+	i ← i + 1
+if i ≤ n then location ← i else location ← 0
+
+Algorithm 2: Binary search
+-----------------------------
+Data structure	Array
+Worst case performance	O(log n)
+Best case performance	O(1)
+Average case performance	O(log n)
+Worst case space complexity	O(1) iterative, O(log n) recursive
+(without tail call elimination)
+C++'s STL provides the functions binary_search(), lower_bound(), upper_bound() and equal_range().
+Input: sorted sequence a1, a2, …, an
+position of target value x
+Output: subscript of entry equal to target value; 0 if not found
+
+Initialize: left ← 0; right ← n -1
+while (left < right)
+	mid ← (left + right) / 2
+	if(x == a[mid]) return location<- mid
+	if x > a[mid] then left ← mid + 1 else right ← mid
+return -1
+
+Sorting:- bubble sort, insertion sort, quick sort and merge sort.
+================================================================
+exchange sorts:-bubble sort,quick sort
+selection sorts:- heap sort
+insertion sorts:- insertion sort
+merge sorts:- merge sort
+
+Algorithm 3: Insertion sort
+--------------------------
+for j ← 2 to n
+key ← aj
+i ← j - 1
+while i > 0 and ai > aj
+ai+1 ← ai
+i ← i - 1
+ai ← key
+
+Algorithm 4: Bubble sort
+-------------------------------
+Input: unsorted sequence a1, a2, …, an
+Output: sorted sequence a1, a2, …, an
+for i ← 1 to n
+for j ← n to i + 1
+if aj < aj-1 then interchange aj and aj-1

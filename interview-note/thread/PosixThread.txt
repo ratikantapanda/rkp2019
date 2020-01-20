@@ -1,0 +1,78 @@
+1.Mutex type:- PTHREAD_MUTEX_NORMAL,PTHREAD_MUTEX_RECURSIVE,PTHREAD_MUTEX_ERRORCHECK
+2.Mutex operation:- pthread_mutex_lock(),pthread_mutex_unlock(),pthread_mutex_trylock():EBUSY,pthread_mutex_timedlock():ETIMEDOUT
+3.prod_no_condvar.c
+In the producer thread
+
+pthread_mutex_lock(&mtx);
+avail++; /* Let consumer know another unit is available */
+pthread_mutex_unlock(&mtx);
+
+And in the main (consumer) thread, we could employ the following code:
+for (;;) {
+pthread_mutex_lock(&mtx);
+while (avail > 0) { 
+/* Consume all available units */
+/* Do something with produced unit */
+avail--;
+}
+The above code works, but it wastes CPU time
+
+
+A condition variable remedies this
+problem. It allows a thread to sleep (wait) until another thread notifies (signals) it
+that it must do something (i.e., that some “condition” has arisen that the sleeper
+must now respond to).
+
+
+pthread_mutex_lock(&mtx);
+avail++; /* Let consumer know another unit is available */
+pthread_mutex_unlock(&mtx);
+pthread_cond_signal(&cond);
+
+-----------
+pthread_mutex_lock(&mtx);
+while (/* Check that shared variable is not in state we want */)
+pthread_cond_wait(&cond, &mtx);
+/* Now shared variable is in desired state; do some work */
+pthread_mutex_unlock(&mtx);
+-----
+for (;;) {
+s = pthread_mutex_lock(&mtx);
+while (avail == 0) { /* Wait for something to consume */
+s = pthread_cond_wait(&cond, &mtx);
+
+}
+while (avail > 0) { /* Consume all available units */
+/* Do something with produced unit */
+avail--;
+}
+s = pthread_mutex_unlock(&mtx);
+/* Perhaps do other work here that doesn't require mutex lock */
+}
+
+Semaphore:-
+-------------
+producer---->shared buffer------> consumer
+
+producer:-
+----------
+sem_t put=1,get=0;
+for(;;){
+sem_wait(&put);
+put message into buffer;
+sem_post(&get);
+}
+consumer
+-------
+for(;;){
+sem_wait(&get);
+consume message from buffer;
+sem_post(&put);
+}
+Q- mutex vs semaphore
+----------------------
+
+1.mutex can not signal to other thread(if needful ,will take help from conditional variable)
+2.The thread which locked the mutex can unlock only.
+3.When no thread are on the condition waiting queue the signal will be lost.
+,bbut for semaphore case it is not possible.

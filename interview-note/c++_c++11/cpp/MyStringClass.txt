@@ -1,0 +1,221 @@
+class String
+{
+private:
+  char *str_;
+  size_t len;
+public:
+  String() : len(0), str_(NULL) { }
+  String(char * str )
+  {
+    len = 0;
+    while (str[len] != '\0')
+   { 
+      ++len; 
+   }
+    str_=new char[len+1];
+    for (int i = 0 ; i < len ; i++) 
+    {
+      str_[i] = str[i];
+    }
+    str_[len]='\0';
+  }
+  String(const String& s)
+  {
+   len=s.len;
+   if(len==0) str_=NULL;
+   else
+   {
+     str_=new char[len+1];
+	 for(int i=0; i < len; i++)
+	 {
+	   str_[i]=s.str_[i];
+	 }
+	 str_[len]='\0';
+   }
+   String& operator=(const String& rhs)
+   {
+     if(this!=&rhs)
+	 {
+	   if(str_ !=0)
+	   {
+	     delete str_;
+	   }
+	   len=rhs.len;
+	   str_=new char[len+1];
+	   for(int i=0; i< len; ++i)
+	   {
+	    str_[i]=rhs.str_[i];
+	   }
+	   str_[i]='\0';
+	 }
+	 return *this;
+   }
+   
+  ~String()
+  { 
+    if(len > 0)
+	{ 
+          if(str_)
+          {
+	    delete str_;
+          }
+	}
+  }
+    // MODIFICATION MEMBER FUNCTIONS
+        void operator +=(const mystring& addend);
+        void operator +=(const char addend[ ]);
+        void operator +=(char addend);
+        void reserve(size_t n);
+        void operator =(const mystring& source);
+        // CONSTANT MEMBER FUNCTIONS
+        std::size_t length( ) const { return current_length; }
+		size_t size() { return length; }
+        char operator [ ](size_t position) const;
+        // FRIEND FUNCTIONS
+        friend std::ostream& operator <<(std::ostream& outs, const mystring& source);
+        friend bool operator ==(const mystring& s1, const mystring& s2);
+        friend bool operator !=(const mystring& s1, const mystring& s2);
+        friend bool operator >=(const mystring& s1, const mystring& s2);
+        friend bool operator <=(const mystring& s1, const mystring& s2);
+        friend bool operator > (const mystring& s1, const mystring& s2);
+        friend bool operator < (const mystring& s1, const mystring& s2);
+  //  accessors
+  
+  size_t length() const { return len; }
+  char& operator[] (int index ) const;
+  char& operator[] (int index )
+  {
+    if( index < 0 || index > length ) {
+	cerr << "Invalid index in myString::operator[]. Aborting...\n";
+	exit(-1);   // exit immediately. This is BAD -- somebody has to
+	            // first deallocate the strings we allocated, or else
+	            // we have a memory leak!  
+      }
+      return buff[index];
+    }
+  friend ostream& operator<<(ostream&,String&)
+  {
+     for (int i = 0 ; i < s.len ; i++)
+     {
+       out << s.str_[i];
+     }
+     return out;
+  }
+  friend istream& operator>>(istream&,String&);
+
+};
+
+//String class implementation with ref count and copy on write
+--------------------------------------------------------------
+class String{
+public:
+... // the usual String member
+   // functions go here
+private:
+struct StringValue { ... }; // holds a reference count
+// and a string value
+StringValue *value; // value of this String
+};
+
+class String 
+{
+private:
+  struct StringValue 
+  {
+    size_t refCount;
+    char *data_;
+    StringValue(const char *data):refCount(1)
+	{
+	   data_=new char[strlen(data) + 1];
+	   strcpy(data_,data);
+	}
+    ~StringValue()
+	{
+	  delete [] data;
+	}
+  };
+  StringValue *value;
+  size_t len;
+public:
+  String(const char *initValue = ""): value(new StringValue(initValue)){}
+  String(const String& rhs): value(rhs.value)
+  {
+     ++value->refCount;
+  }
+  String::~String()
+  {
+     if (--value->refCount == 0) delete value;
+  }
+  String& String::operator=(const String& rhs)
+  {
+     if (value == rhs.value) 
+	 {
+        return *this; // are already the same; this
+     } 
+    if (--value->refCount == 0)
+    {
+       delete value;
+    }
+    value = rhs.value;
+    ++value->refCount;
+    return *this;
+  }
+//Copy on write
+  const char& operator[](int index) const  // for const Strings
+  {
+    if(index >=o && index <= len)
+	return value->data[index];
+  }
+  char& operator[](int index); // for non-const Strings
+  char& String::operator[](int index)
+ {
+    if (value->refCount > 1) {
+    --value->refCount;
+    value =new StringValue(value->data);
+ }
+ return value->data[index];
+ }
+ };
+ //Reference Counting with shareable flag
+ ==========================================
+class String {
+private:
+  struct StringValue 
+  {
+    size_t refCount;
+    bool shareable; // add this
+    char *data_;
+    StringValue(const char *data):refCount(1),shareable(true)
+	{
+	  data_=new char[strlen(data)+1];
+	  strcpy(data_,data);
+	}
+	~StringValue()
+	{
+	   delete[] data_;
+	}
+  };
+  String::String(const String& rhs)
+  {
+     if (rhs.value->shareable) 
+	 {
+       value = rhs.value;
+       ++value->refCount;
+     }
+     else
+	 {
+        value = new StringValue(rhs.value->data);
+     }
+  }
+  char& String::operator[](int index)
+  {
+    if (value->refCount > 1) 
+	{
+       --value->refCount;
+       value = new StringValue(value->data);
+    }
+   value->shareable = false; // add this
+   return value->data[index];
+  }
+};
+ 

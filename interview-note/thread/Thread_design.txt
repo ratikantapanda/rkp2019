@@ -1,0 +1,287 @@
+#include <iostream>
+#include <queue>
+#include <boost/thread.hpp>
+#include <boost/thread/locks.hpp>
+
+template < typename _Tp, typename _queueTp > class Channel;
+
+template<typename QueueContents, template<typename QueueContents> class QueueType>
+class WorkerThread
+{
+private:
+    boost::thread m_Thread;
+protected:
+    int m_numItems;
+    int m_delay;
+    QueueType<QueueContents> &m_Queue;
+public:
+    WorkerThread(QueueType<QueueContents> &Queue, int n, int delay)
+        : m_Queue(Queue)   // queue shared with consumer
+        , m_delay(delay)   // delay for simulating heavy work
+        , m_numItems(n) // number of work items to produce
+    {}
+
+    void Start() // start work
+    {
+        m_Thread = boost::thread(&WorkerThread::Work, this);
+    }
+
+    void Stop() // interrupt work
+    {
+        m_Thread.interrupt();
+    }
+
+    virtual void Work() = 0;
+
+    void WaitUntilFinished()
+    {
+        m_Thread.join();
+    }
+
+};
+template<typename QueueContents, template<typename QueueContents> class QueueType>
+class Producer : public WorkerThread<QueueContents, QueueType>
+{
+public:
+    Producer(QueueType<QueueContents> &Queue, int n, int delay)
+        : WorkerThread<QueueContents, QueueType>(Queue, n, delay)
+    {}
+
+    void Work()
+    {
+        for (QueueContents i=0; i < this->m_numItems;++i)
+        {
+            // send numbers 0 to 999 into the queue
+            boost::this_thread::sleep(boost::posix_time::milliseconds(this->m_delay));
+            this->m_Queue.Push(i);
+            std::ostringstream msg;
+            msg << "[PRODUCER] Produced value " << i << std::endl;
+            std::cout << msg.str();
+        }
+    }
+};
+
+template<typename QueueContents, template<typename QueueContents> class QueueType>
+class Consumer : public WorkerThread<QueueContents, QueueType>
+{
+public:
+    Consumer(QueueType<QueueContents> &Queue, int NoOfIt, int Delay)
+        : WorkerThread<QueueContents, QueueType>(Queue, NoOfIt, Delay)
+    {}
+
+    void Work()
+    {
+        for (QueueContents i=0; i < this->m_numItems; ++i)
+        {
+            QueueContents  result_num = -1;
+            this->m_Queue.WaitAndPop(result_num);
+            std::ostringstream msg;
+            msg << "[CONSUMER] Consumed value " << result_num << std::endl;
+            std::cout << msg.str();
+            // work hard
+            boost::this_thread::sleep(boost::posix_time::milliseconds(this->m_Delay));
+            std::ostringstream msg2;
+            msg2 << "[CONSUMER] Consumption of value " << m_numItems  << " completely handled." << std::endl;
+            std::cout << msg2.str();
+
+        }
+    }
+};
+template <typename T>
+class Queue
+{
+private:
+    std::queue<T> m_queue;            // Use STL queue to store data
+    boost::mutex m_mutex;             // The mutex to synchronise on
+    boost::condition_variable m_QueueHasData; // The condition to wait for if queue is empty
+    boost::condition_variable m_QueueHasRoom; // The condition to wait for if queue is full
+    unsigned int m_Size;              // max queue size
+
+public:
+    BoundedThreadSafeQueue(unsigned int Size)
+        : m_Size(Size)
+    {}
+
+    bool Empty()
+    {
+        boost::unique_lock<boost::mutex> lock(m_mutex);
+        return m_queue.empty();
+    }
+
+    bool Full()
+    {
+        boost::unique_lock<boost::mutex> lock(m_mutex);
+        return m_queue.size() == m_Size;
+    }
+
+    bool TryPush(const T &data)
+    {
+        boost::unique_lock<boost::mutex> lock(m_mutex);
+        if (m_queue.size() == m_Size) return false;
+        m_queue.push(data);
+        m_QueueHasData.notify_one();
+        return true;
+    }
+
+    void Push(const T &data)
+    {
+        boost::unique_lock<boost::mutex> lock(m_mutex);
+        while (m_queue.size() == m_Size) m_QueueHasRoom.wait(lock);
+        m_queue.push(data);
+        m_QueueHasData.notify_one();
+    }
+ bool TryPop(T &result)
+    {
+        boost::unique_lock<boost::mutex> lock(m_mutex);
+        if (m_queue.size() == 0) return false;
+        result=m_queue.front(); m_queue.pop();
+        m_QueueHasRoom.notify_one();
+        return true;
+    }
+
+    void Pop(T &result)
+    {
+        boost::unique_lock<boost::mutex> lock(m_mutex);
+        while (m_queue.size() == 0) m_QueueHasData.wait(lock);
+        result=m_queue.front(); m_queue.pop();
+        m_QueueHasRoom.notify_one();
+     }
+};
+
+
+
+int main()
+{
+    Queue<int> Q;
+    Producer<int,Queue> P(Q, 10, 0);
+    Consumer<int, Queue> C(Q, 10, 1);
+    P.Start();
+    C.Start();
+    P.WaitUntilFinished();
+    C.WaitUntilFinished();
+    return 0;
+}
+//======================================================================================
+
+
+#include <pthread.h>
+#include <semaphore.h>
+#include<stdio.h>
+
+#define BUFFER_SIZE 10
+
+int item=0;
+
+static int buffer[BUFFER_SIZE];
+static int i= 0;
+
+sem_t sem_empty;
+sem_t sem_full;
+sem_t buff_lock;
+
+void* Producer(void* arg)
+{
+    printf("Producer Thread \n");
+        for(; ;){
+        sem_wait(&sem_empty);
+        sem_wait(&buff_lock);
+        if( i <= BUFFER_SIZE -1 ){
+        item++;
+        buffer[i]=item;
+        printf("Produced item at index %d is %d\n",i, item);
+        //i = i % BUFFER_SIZE;
+        i++;
+        }
+        sem_post(&buff_lock);
+        sem_post(&sem_full);
+        }
+        return (void*)0;
+}
+
+void* Consumer(void* arg)
+{
+printf("Consumer  Thread \n");
+   while(1){
+   sem_wait(&sem_full);
+   sem_wait(&buff_lock);
+   if( i  >=  0){
+   item=buffer[ci];
+   printf("Consumed item at index %d is %d\n",ci, buffer[ci]);
+   buffer[ci++] = -1;
+    ci  = ci  % BUFFER_SIZE;
+   }
+   sem_post(&buff_lock);
+   sem_post(&sem_empty);
+    }
+    pthread_exit((void*)0);
+}
+
+
+
+int main()
+{
+printf("Welcome main\n");
+sem_init(&sem_empty,0,BUFFER_SIZE);
+sem_init(&sem_full,0,0);
+sem_init(&buff_lock,0,1);
+pthread_t tid1,tid2;
+int t1,t2;
+t1=pthread_create(&tid1,NULL,&Producer,NULL);
+t2=pthread_create(&tid2,NULL,&Consumer,NULL);
+pthread_join(tid1,NULL);
+pthread_join(tid2,NULL);
+return 0;
+}
+
+//========================================================
+#include <pthread.h>
+#include<stdio.h>
+
+#define BUFFER_SIZE 10
+
+int item=0;
+static int buffer[BUFFER_SIZE];
+static int i= 0;
+
+pthread_cond_t cond_produce= PTHREAD_COND_INITIALIZER;
+pthread_cond_t cond_consume= PTHREAD_COND_INITIALIZER;
+pthread_mutex_t buff_lock= PTHREAD_MUTEX_INITIALIZER;
+
+void* Producer(void* arg)
+{
+    printf("Welcome upcount\n");
+        for(; ;){
+        pthread_mutex_lock(&buff_lock);
+        while (i == BUFFER_SIZE ){
+        printf("Max number of elements ,please wait to consume...\n");
+        pthread_cond_wait(&cond_produce, &buff_lock);
+        }
+        item++;
+        buffer[i]=item;
+        printf("Produced item at index %d is %d\n",i, item);
+        i++;
+        pthread_mutex_unlock(&buff_lock);
+        pthread_cond_signal(&cond_consume);
+        }
+        return (void*)0;
+}
+
+void* Consumer(void* arg)
+{
+   printf("welcome countdown\n");
+   while(1){
+   pthread_mutex_lock(&buff_lock);
+   while(i == 0 ){
+   printf("No element,please wait to up...\n");
+   pthread_cond_wait(&cond_consume,&buff_lock);
+   }
+   item=buffer[i];
+   printf("Consumed item at index %d is %d\n",i, item);
+    i--;
+   //buffer[i] = -1;
+   pthread_mutex_unlock(&buff_lock);
+   pthread_cond_signal(&cond_produce);
+    }
+    pthread_exit((void*)0);
+}
+

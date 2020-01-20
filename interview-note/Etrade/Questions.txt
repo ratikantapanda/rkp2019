@@ -1,0 +1,44 @@
+1.How to pass pass array inot function, why length of the array is most essential.
+2. Retrun array from a function?
+3. Self join 
+4. Can unique index have NULL.
+==
+int* test(size_t& array_size)
+{
+    array_size = 3;
+    int* ptr=new int[array_size];
+    ptr[0]=10;
+    ptr[1]=20;
+    ptr[2]=30;
+    return ptr;
+}
+
+array<int,3>  f1()
+{
+        std::array<int,3> a1={1,2,3};
+        return a1;
+}
+
+
+vector<int>  f2()
+{
+        std::vector<int> v1={1,2,3};
+        return v1;
+}
+
+int main()
+{
+        auto v1=f1();
+        for(auto& e : v1){
+                std::cout << e << std::endl;
+        }
+        size_t theSize = 0;
+int* theArray = test(theSize);
+for (size_t i; i < theSize; ++i)
+{
+        std::cout << theArray[i] << std::endl;
+
+}
+delete[] theArray;
+
+}

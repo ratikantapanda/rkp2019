@@ -1,0 +1,8 @@
+1.How you do code review,which factors you give priority?
+2.How to reduce compile time class dependency?
+3.What is dead lock, how to prvent dead lock.
+4.Exception handling with a pointer and dynamic memory allocation
+5.auto, type of an function returning class referennce
+6.What are new features in c++11/c++14
+7.what is explicit key word.where can we use those.
+8.what is dynamic polymor phism

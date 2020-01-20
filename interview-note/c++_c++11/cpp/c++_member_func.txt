@@ -1,0 +1,40 @@
+pass and call a member function( boost::bind,boost::function )
+################################################################
+void Test::f2(void (*callfunc)(uint32_t)){
+  (*callfunc)(42);
+}
+void f2(boost::function<void(uint32_t)>);
+Then you can call it like this:
+f2( boost::bind( &Test::f3, this, _1 ) );
+-------------
+f2(void (*callfunc)(uint32_t))
+boost::function<void (uint32_t)> f = boost::bind(&Test::f3, this, _1);
+f2(f);
+ 
+solution 2:- without using boost
+==================================
+How to use an mem function as a signal handler 
+
+class Fred {
+public:
+  void memberFn();
+  static void staticMemberFn();  // A static member function can usually handle it
+  // ...
+};
+// Wrapper function uses a global to remember the object:
+Fred* object_which_will_handle_signal;
+void Fred_memberFn_wrapper()
+{
+  object_which_will_handle_signal->memberFn();
+}
+int main()
+{
+  /* signal(SIGINT, Fred::memberFn); */   // Can NOT do this
+  signal(SIGINT, Fred_memberFn_wrapper);  // Okay
+  signal(SIGINT, Fred::staticMemberFn);   // Okay usually; see below
+  // ...
+}
+Note: static member functions do not require an actual object to be invoked, 
+so pointers-to-static-member-functions are usually type-compatible with regular pointers-to-functions. 
+However, although it probably works on most compilers, it actually would have to be an extern "C" non-member function to be correct,
+ since “C linkage” doesn’t only cover things like name mangling, but also calling conventions, which might be different between C and C++.

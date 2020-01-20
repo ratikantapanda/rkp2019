@@ -1,0 +1,68 @@
+default constructor:
+===========
+A a; //A a=A();
+class MemoryPage
+{
+  size_t size;
+  char * buf;
+public:
+  explicit MemoryPage(int sz=512):size(sz), buf(new char [size]) {}
+  ~MemoryPage( delete[] buf;}
+//typical C++03 copy ctor and assignment operator
+  MemoryPage(const MemoryPage&);
+  MemoryPage& operator=(const MemoryPage&);
+};
+//Typical copy constructor
+MemoryPage(const MemoryPage& other)
+{
+ size=other.size;
+ if(size !=0)
+ { 
+   buf=new char[size+1];
+   for(int i=0, i < size, i++)
+   {
+     buf[i]=other.buf[i];
+   }
+   buf[size+1]='\0';
+ }
+ else buf=NULL;
+ 
+}
+//C++11 : Typical move constructor
+MemoryPage(MemoryPage&& other): size(0), buf(nullptr)
+{
+  // pilfer other’s resource
+  size=other.size;
+  buf=other.buf;
+ // reset other
+ other.size=0;
+ other.buf=nullptr;
+}
+
+//C++11: Typical move assignment operator
+MemoryPage& MemoryPage::operator=(MemoryPage&& other)
+{
+  if (this!=&other)
+  {
+    // release the current object’s resources
+    delete[] buf;
+   size=0;
+  // pilfer other’s resource
+  size=other.size;
+  buf=other.buf;
+  // reset other
+  other.size=0;
+  other.buf=nullptr;
+}
+return *this;
+}
+#include <vector>
+using namespace std;
+int main()
+{
+  vector<MemoryPage> vm;
+  MemoryPage mp1(1024);//lvalue
+  vm.push_back(mp); //push_back(const T&)
+  vm.push_back(std::move(mp));//calls push_back(T&&)
+  vm.push_back(MemoryPage(1024));//calls push_back(T&&)
+}

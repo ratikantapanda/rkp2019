@@ -1,0 +1,210 @@
+const int TABLE_SIZE = 128;
+
+class HashEntry{
+
+public:
+	int key;
+	int value;
+	HashEntry(int key, int value)
+	{
+	this->key = key;
+	this->value = value;
+	}
+};
+
+2
+
+class HashMap
+
+{
+private:
+	HashEntry **table;
+public:   
+	HashMap()
+	{
+	   table = new HashEntry * [TABLE_SIZE];//dynamically allocated an array of pointers.
+	   for (int i = 0; i< TABLE_SIZE; i++)
+	   {
+	     table[i] = NULL;
+	   }
+    }
+	
+	
+	int HashFunc(int key)
+
+{
+
+         return key % TABLE_SIZE;
+ }
+
+
+
+void Insert(int key, int value)
+{
+	int hash = HashFunc(key);
+	while (table[hash] != NULL && table[hash]->key != key)
+	{
+		hash = HashFunc(hash + 1);
+	}
+	if (table[hash] != NULL)
+	delete table[hash];
+	table[hash] = new HashEntry(key, value);
+}
+
+
+int Search(int key)
+{
+	int  hash = HashFunc(key);
+	while (table[hash] != NULL && table[hash]->key != key)
+	{
+		hash = HashFunc(hash + 1);
+	}
+	if (table[hash] == NULL)
+	return -1;
+	else
+	return table[hash]->value;
+}
+
+
+
+void Remove(int key)
+{
+	int hash = HashFunc(key);
+	while (table[hash] != NULL)
+	{
+		if (table[hash]->key == key)
+		break;
+		hash = HashFunc(hash + 1);
+	}
+	if (table[hash] == NULL)
+	{
+		cout<<"No Element found at key "<<key<<endl;
+		return;
+	}
+	else
+	{
+		delete table[hash];
+	}
+	cout<<"Element Deleted"<<endl;
+}
+
+~HashMap()
+{
+	for (int i = 0; i < TABLE_SIZE; i++)
+	{
+		if (table[i] != NULL)
+		delete table[i];
+		delete[] table;
+	}
+}
+
+
+113. * Main Contains Menu
+
+114. */
+
+115.int main()
+
+116.{
+
+117.    HashMap hash;
+
+118.    int key, value;
+
+119.    int choice;
+
+120.    while (1)
+
+121.    {
+
+122.        cout<<"\n----------------------"<<endl;
+
+123.        cout<<"Operations on Hash Table"<<endl;
+
+124.        cout<<"\n----------------------"<<endl;
+
+125.        cout<<"1.Insert element into the table"<<endl;
+
+126.        cout<<"2.Search element from the key"<<endl;
+
+127.        cout<<"3.Delete element at a key"<<endl;
+
+128.        cout<<"4.Exit"<<endl;
+
+129.        cout<<"Enter your choice: ";
+
+130.        cin>>choice;
+
+131.        switch(choice)
+
+132.        {
+
+133.        case 1:
+
+134.            cout<<"Enter element to be inserted: ";
+
+135.            cin>>value;
+
+136.            cout<<"Enter key at which element to be inserted: ";
+
+137.            cin>>key;
+
+138.            hash.Insert(key, value);
+
+139.            break;
+
+140.        case 2:
+
+141.            cout<<"Enter key of the element to be searched: ";
+
+142.            cin>>key;
+
+143.            if (hash.Search(key) == -1)
+
+144.            {
+
+145.	        cout<<"No element found at key "<<key<<endl;
+
+146.	        continue;
+
+147.	    }
+
+148.	    else
+
+149.	    {
+
+150.	        cout<<"Element at key "<<key<<" : ";
+
+151.	        cout<<hash.Search(key)<<endl;
+
+152.	    }
+
+153.            break;
+
+154.        case 3:
+
+155.            cout<<"Enter key of the element to be deleted: ";
+
+156.            cin>>key;
+
+157.            hash.Remove(key);
+
+158.            break;
+
+159.        case 4:
+
+160.            exit(1);
+
+161.        default:
+
+162.           cout<<"\nEnter correct option\n";
+
+163.       }
+
+164.    }
+
+165.    return 0;
+
+166.}
+
+}
