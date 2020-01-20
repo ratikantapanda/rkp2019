@@ -1,0 +1,78 @@
+Binary search Algorithm
+=======================
+1.The input array is already sorted.
+Recursive solution
+---------------------
+int binary_search(int a[], int start, int end, int key){
+ 
+     if(start <= end) {
+        int mid  = (start + end)/2;
+ 
+        if(a[mid] == key)       return mid;
+ 
+        if(a[mid] < key) {
+             return binary_search(a, mid+1, end, key) ;
+        }
+        else {
+             return binary_search(a, start, mid-1, key) ;
+        }
+     }
+     return -1;
+}
+
+Iterative solution
+-----------------------
+int binary_search(int a[], int start, int end, int key){
+ 
+ 	 while(start <= end){
+ 	 	int mid  = (start + end)/2;
+ 	 
+        if(a[mid] == key)       return mid;
+ 
+        if(a[mid] < key)
+             start = mid+1;
+        else
+             end = mid-1 ;
+    }
+     
+    return -1;
+}
+1. Find first instance of a number in sorted array where duplicates are allowed.
+--------------------------------------------------------------------------------
+int first_instance(int a[], int start, int end, int key){
+ 
+     if(start < end) {
+        int mid  = (start + end)/2;
+ 
+        if(a[mid] == key && a[mid] > a[mid-1]) return mid;
+ 
+        if(a[mid] < key) {
+             return first_instance(a, mid+1, end, key) ;
+        }
+        else {
+             return first_instance(a, start, mid-1, key) ;
+        }
+     }
+     return start;
+}
+2.Find last instance of a number in sorted array if duplicates are allowed.
+-----------------------------------------------------------------------------
+int first_instance(int a[], int start, int end, int key){
+ 
+     if(start < end) {
+        int mid  = (start + end)/2;
+ 
+        if(a[mid] == key && a[mid] < a[mid+1]) return mid;
+ 
+        if(a[mid] <= key) {
+             return first_instance(a, mid+1, end, key) ;
+        }
+        else {
+             return first_instance(a, start, mid-1, key) ;
+        }
+     }
+     return start;
+}
+3.3. Find number of instances of a number in sorted array when duplicates are allowed.
+----------------------------------------------------------------------------------------------------------
+To find numbers instances just find the first instance and last instance of occurrence and then do last-first + 1.

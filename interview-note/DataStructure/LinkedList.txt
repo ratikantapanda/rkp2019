@@ -1,0 +1,608 @@
+class linklist
+{
+public:
+	struct node{
+	int data;
+	node* nextptr;
+	}* lp; //lp is like head
+public:
+linklist();//default constructor
+linklist(const linklist& theList);//copy constructor
+~linklist();//destructor
+...
+};
+linklist::linklist(){lp=NULL;}
+linklist::linklist(const linklist& theList){lp=theList.lp;}
+linklist :: ~linklist( )
+{
+	node *q ;
+
+    while ( lp != NULL )
+    {
+        q = lp ->nextptr ;
+        delete lp ;
+    	lp = q  ;
+    }
+}
+
+void del ( int num );
+// adds a node at the end of a linked list
+void linklist :: append ( int num )
+{
+	node *temp, *r ;
+
+    // if the list is empty, create first node
+	if ( lp == NULL )
+	{
+		lp = new node ;
+		lp -> data = num ;
+		lp -> nextptr = NULL ;
+	}
+	else
+	{
+		// go to last node
+		temp =lp ;
+		while ( temp ->nextptr!= NULL )
+		temp = temp ->nextptr ;
+
+		// add node at the end
+		r = new node ;
+		r ->data = num ;
+		r ->nextptr = NULL ;
+		temp ->nextptr = r ;
+	}
+	/*else{
+		temp=lp;
+		while(temp->nextptr!=NULL){temp=temp->nextptr;}
+		temp->nextptr=new node;
+		temp->nextptr->data=num;
+		temp->nextptr->nextptr=NULL;
+	}*/
+
+}
+// adds a new node at the beginning of the linked list
+void linklist :: addatbeg ( int num )
+{
+	node *temp ;
+
+	// add new node
+	temp = new node ;
+
+	temp -> data = num ;
+	temp -> nextptr = lp ;
+	lp = temp ;
+}
+// adds a new node after the specified number of nodes
+void linklist :: addafter ( int loc, int num )
+{
+	node *temp, *r ;
+	temp = lp ;
+
+	// skip to desired portion
+	for ( int i = 0 ; i < loc ; i++ )
+	{
+		temp = temp ->nextptr ;
+
+		// if end of linked list is encountered
+		if ( temp == NULL )
+		{
+			cout << "\nThere are less than " << loc << " elements in list" << endl ;
+			return ;
+		}
+	}
+}
+
+void linklist :: display( )
+{
+	node *temp = lp ;
+
+	cout << endl ;
+	// traverse the entire linked list
+	while ( temp != NULL )
+	{
+		cout << temp -> data << "  " ;
+		temp = temp ->nextptr;
+	}
+}
+
+// counts the number of nodes present in the linked list
+int linklist :: count( )
+{
+	node *temp = lp ;
+	int c = 0 ;
+
+	// traverse the entire linked list
+	while ( temp != NULL )
+	{
+		temp = temp ->nextptr ;
+		c++ ;
+	}
+
+	return c ;
+}
+
+// deletes the specified node from the linked list
+void linklist :: del ( int num )
+{
+	node *old, *temp ;
+
+	temp = lp ;
+
+	while ( temp != NULL )
+	{
+		if ( temp -> data == num )
+		{
+			// if node to be deleted is the
+			// first node in the linked list
+			if ( temp == lp )
+				lp = temp ->nextptr ;
+
+			// deletes the intermediate nodes in the linked list
+			else
+				old ->nextptr = temp ->nextptr ;
+
+			// free the memory occupied by the node
+			delete temp ;
+			return ;
+		}
+
+		// traverse the linked list till the last node is reached
+		else
+		{
+            // old points to the previous node
+			old = temp ;
+
+            // go to the next node
+			temp = temp ->nextptr ;
+		}
+	}
+
+	cout << "\n\nElement " << num << " not found" ;
+}
+
+
+// adds node to an ascending order linked list
+void linklist :: add ( int num )
+{
+	node *r, *temp ;
+	temp = lp ;
+
+	r = new node ;
+	r -> data = num ;
+
+	// if list is empty or if new node is to be
+	// inserted before the first node
+	if ( lp == NULL || lp -> data > num )
+	{
+		lp = r ;
+		lp -> nextptr = temp ;
+	}
+	else
+	{
+		// traverse the entire linked list to search
+		// the position to insert the new node
+		while ( temp != NULL )
+		{
+			if ( temp -> data < num && ( temp -> nextptr -> data > num ||
+				temp -> nextptr == NULL ))
+			{
+				r -> nextptr = temp -> nextptr ;
+				temp -> nextptr = r ;
+				return ;
+			}
+
+			//go to next node
+			temp = temp -> nextptr ;
+		}
+
+		r -> nextptr = NULL ;
+		temp -> nextptr = r ;
+	}
+}
+void linklist :: merge ( linklist &l1, linklist&l2 )
+{
+	node *z ;
+
+	z = NULL ;
+
+	// if both lists are empty
+	if ( l1.lp == NULL && l2.lp == NULL )
+		return ;
+
+	// traverse both linked lists till the end.
+	// If end of any one list is reached loop is terminated
+	while ( l1.lp != NULL && l2.lp != NULL )
+	{
+		// if node being added is the first node
+		if ( lp == NULL )
+		{
+			lp = new node ;
+			z = lp ;
+		}
+		else
+		{
+			z -> nextptr = new node ;
+			z = z -> nextptr ;
+		}
+
+		if ( l1.lp -> data < l2.lp -> data )
+		{
+			z -> data = l1.lp -> data ;
+			l1.lp = l1.lp -> nextptr ;
+		}
+		else
+		{
+			if ( l2.lp -> data < l1.lp -> data )
+			{
+				z -> data = l2.lp -> data ;
+				l2.lp = l2.lp -> nextptr ;
+			}
+			else
+			{
+				if ( l1.lp -> data == l2.lp -> data )
+				{
+					z -> data = l2.lp -> data ;
+					l1.lp = l1.lp -> nextptr ;
+					l2.lp = l2.lp -> nextptr ;
+				}
+			}
+		}
+	}
+}
+Node * merge_sort(Node *a, Node *b){
+    Node *result = NULL;
+    if(a ==  NULL)
+        return b;
+    else if(b == NULL)
+        return a;
+ 
+    /* For the first node, we would set the result to either a or b */
+      if(a->data <= b->data){
+         result = a;
+        /* Result's next will point to smaller one in lists 
+           starting at a->next  and b */
+         result->next = merge_sort(a->next,b);
+      }
+      else {
+        result = b;
+       /*Result's next will point to smaller one in lists 
+         starting at a and b->next */
+        result->next = merge_sort(a,b->next);
+      }
+      return result;
+}
+
+// copies a linked list into another
+/*void linklist :: copy ( linklist& l)
+{node* ptr1=lp;
+node** ptr2=&(l.lp);
+	if ( ptr1 != NULL )
+	{
+		*ptr2 = new node ;
+
+		(*ptr2) -> data = ptr1 -> data ;
+		(*ptr2) -> nextptr = NULL ;
+		l=lp->nextptr;
+
+		copy (l) ;
+	}
+}*/
+void linklist::printListInReverse(node* head){
+if (head != NULL) {
+    printListInReverse(head->nextptr);
+	std::cout << head->data <<" ";
+  }
+}
+//########################################################################################################################################
+//--------------------------------
+Reverse a linklist
+//-----------------------------------
+void reverse( node* head )
+{
+	node* prev=NULL;
+    node* present = NULL;
+    node* future=NULL;
+    present=node;
+    while (present != NULL) 
+    {
+        future = present->next;
+        present->next = past;
+        past = present;
+        present = future;
+    }
+    return past;
+}
+//---------------------------------------------
+reverse the last 5 nodes in the list.  For a list with 5 or less nodes, reverse the whole list.
+//-----------------------------------------------
+Sol:-
+ int length(Node* node)
+{
+    int len = 0;
+  Node* curr=node;
+While(*curr !=Null){
+len++;
+Curr=curr->next;
+}
+return len;
+}
+ 
+void reverse( node* head )
+{
+	node* prev=NULL;
+    node* present = NULL;
+    node* future=NULL;
+    present=node;
+    while (present != NULL) 
+    {
+        future = present->next;
+        present->next = past;
+        past = present;
+        present = future;
+    }
+    return past;
+}
+ 
+void reverse_last(Node* head, int k)
+{
+    int n = length(head);
+    Node* temp = head;
+    for (int i = 0; i < n-k-1; i++) temp= temp->next;
+    temp->next = reverse(temp->next);
+}
+
+//--------------------------------------
+Print last 3 node
+//------------------------------------
+viod printLastKthdNode( node* head,int k )
+{
+	node* first=head;
+	node* last=head;
+	while(k--)
+	{
+	 if(last->next) last=last->next;
+	}
+	if(last == NULL) return;
+	while(last->next != NULL )
+	{  
+      first	=first->next;
+	  last=last->next;
+	}
+  //print [first,last]
+  while(first != last)
+  {
+    cout << *first << endl;
+	first=first->next;
+  }
+}
+//---------------------------------
+Get Nth node
+//-----------------------------------
+node* GetNth( node* head,int index)
+{
+    struct node* current = head;
+    int count = 0; 
+    while (current != NULL)
+    {
+       if (count == index)
+	   {
+	       return  current;
+	   }
+       count++;
+       current = current->nextptr;
+    }     
+}
+//--------------------------------------------
+Middle node
+//-------------------------------------------
+node* getMiddleNode(node* head)
+{
+ if(!head) return 1;
+ if(!head->next) return 1;
+ int count=1;
+ node* current=head;
+ node* fast=head->next;
+	while(fast)
+	{
+	count++;
+	current=current->next;
+	fast=fast->next)? fast->next->next : 0;
+    }
+	return current;
+}
+//------------------------------------------------------
+Merge a list into another list at a certain position
+//------------------------------------------------------
+void intersectTwoLists(node* lp1,nose* lp2,int pos){
+	node* ptr1=lp1;
+	node* ptr2=lp2;
+	while(--pos && ptr1->nextptr != NULL ){
+		ptr1=ptr1->nextptr;
+	}
+	while(ptr2->nextptr != NULL ){
+		ptr2=ptr2->nextptr;
+	}
+
+	ptr2->nextptr=ptr1;
+}
+//--------------------------------------------------------------
+check likedlist is merged/intersected or not
+//--------------------------------------------------------
+bool checkLinkedListIsMergedOrNot(node* lp1, node* lp2){
+	node* ptr1=lp1;
+	node* ptr2=lp2;
+
+	while(ptr1->nextptr !=NULL) ptr1=ptr1->nextptr;
+	while(ptr2->nextptr !=NULL) ptr2=ptr2->nextptr;
+	if(ptr1 == ptr2)
+		return true;
+	else
+		return false;
+}
+//--------------------------------------------------
+Get linklist intersection point/node
+//-----------------------------------------------
+node* getCrossPoint(node* lp1,node* lp2){
+	node* tmp1=lp1;
+	node* tmp2=lp2;
+	int diff=std::abs(lp1.count()-lp2.count());
+	
+		while(diff--){
+			if(lp1.count() > lp2.count()){
+			tmp1=tmp1->nextptr;
+			}
+			else{
+				tmp2=tmp2->nextptr;
+				}
+		}
+		while(tmp1 != tmp2){
+			tmp1=tmp1->nextptr;
+			tmp2=tmp2->nextptr;
+		}
+		if(temp1 != NULL && temp2 != NULL)
+		{if(temp1==temp2) return temp1;}
+	return NULL;		
+}
+//-----------------------------------------------
+Loop detection
+//----------------------------------------------
+bool isLoopDetected(node* head)
+{
+	node  *slow_p = head;
+    node* 	*fast_p = head;
+ 
+  while(slow_p && fast_p && fast_p->nextptr )
+  {
+    slow_p = slow_p->nextptr;
+    fast_p  = fast_p->nextptr->nextptr;
+    if (slow_p == fast_p)
+    {
+	removeLoop(slow_p,head)
+       printf("Found Loop");
+	   return true;
+    }
+  }
+  return false;
+}
+---------
+/* Function to remove loop.*/
+----------------
+ loop_node --> Pointer to one of the loop nodes
+ head -->  Pointer to the start node of the linked list */
+ 
+void removeLoop(struct node *loop_node, struct node *head)
+{
+    struct node *ptr1 = loop_node;
+    struct node *ptr2 = loop_node;
+ 
+    // Count the number of nodes in loop
+	------------------------------------
+    unsigned int k = 1, i;
+    while (ptr1->next != ptr2)
+    {
+        ptr1 = ptr1->next;
+        k++;
+    }
+ 
+    // Fix one pointer to head
+    ptr1 = head;
+ 
+    // And the other pointer to k nodes after head
+    ptr2 = head;
+    for(i = 0; i < k; i++)
+      ptr2 = ptr2->next;
+ 
+    /*  Move both pointers at the same pace,
+      they will meet at loop starting node */
+    while(ptr2 != ptr1)
+    {
+        ptr1 = ptr1->next;
+        ptr2 = ptr2->next;
+    }
+ 
+    // Get pointer to the last node
+    ptr2 = ptr2->next;
+    while(ptr2->next != ptr1)
+       ptr2 = ptr2->next;
+ 
+    /* Set the next node of the loop ending node
+      to fix the loop */
+    ptr2->next = NULL;
+}
+//------------------------------------------------------------
+Pailendrun list
+//--------------------------------------------------------------
+//Reverse the list from[begin,middle-1]
+// We are returning next node as it will be required in calling function
+Node * reverse_the_first_half(Node * node, int k){
+ 
+    Node *current = NULL;
+    Node *prev = NULL;
+    Node *next = NULL;
+ 
+    current = node;
+ 
+    while(current && k--){
+        next = current->next;
+        current->next = prev;
+        prev = current;
+        current = next;
+    }
+    return next;
+}
+ 
+int is_palindrome(Node *head){
+ 
+    if(!head) return 1;
+ 
+    if(!head->next) return 1;
+ 
+    Node * current = head;
+    Node * fast = head->next;
+    int count = 1;
+    /* Find the middlenode and and numbers of node till middle point. */
+    while(fast){
+        fast = fast->next;
+        if(fast){
+            count++;
+            current = current->next;
+            fast = fast->next;
+        }
+    }
+ 
+    // reverse count nodes 
+    Node * next = reverse_the_first_half(head, count);
+    
+    /* Now there are two loops. one for check even length linked list and 
+    other for odd number of nodes in linked list */
+	//if even length
+    Node * curr = current;
+    while(next){
+        if(curr->data == next->data){
+            curr = curr->next;
+            next = next->next;
+        }
+        else{
+            break;
+        }
+    }
+    if(!next){
+        return 1;
+    }
+	//if odd length
+    curr = current->next;
+    while(next){
+        if(curr->data == next->data){
+            curr = curr->next;
+            next = next->next;
+        }
+        else
+            break;
+        }
+    }
+    if(!next)
+        return 1;
+ 
+    return 0;
+ 
+}

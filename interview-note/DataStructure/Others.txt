@@ -1,0 +1,259 @@
+atoi, std::strtol()
+============================
+bool _atoi(const cha* s, u32_t *r)
+{
+  unsigned long long res = 0;
+  if(s==NULL) return false;
+  for (int i = 0; s[i] != ‘\0’; i++)
+  {
+    int d;
+    switch (s[i])
+    {
+      case '0': d = 0; break;
+      case '1': d = 1; break;
+      case '2': d = 2; break;
+      case '3': d = 3; break;
+      case '4': d = 4; break;
+      case '5': d = 5; break;
+      case '6': d = 6; break;
+      case '7': d = 7; break;
+      case '8': d = 8; break;
+      case '9': d = 9; break;
+      default: return false;
+    }
+    res = res * 10 + d;
+    if (res > ((1ULL << 32) -1ULL))
+      return false;
+  }
+  *r = res;
+  return true;
+}
+itoa, std::to_string()
+====================
+std::string itoa(int value, int base) {
+	
+		std::string buf;
+	   // check that the base if valid
+		if (base < 2 || base > 16) return buf;
+        enum { kMaxDigits = 35 };
+		buf.reserve( kMaxDigits ); // Pre-allocate enough space.
+		int quotient = value;
+		// Translating number to string with base:
+		do {
+			buf += "0123456789abcdef"[ std::abs( quotient % base ) ];
+			quotient /= base;
+		} while ( quotient );
+		// Append the negative sign
+		if ( value < 0) buf += '-';
+		std::reverse( buf.begin(), buf.end() );
+		return buf;
+	}
+	-------------
+	
+	ostringstream oss;
+	oss << value;
+	return oss.str();
+https://www.ibm.com/developerworks/community/blogs/5894415f-be62-4bc0-81c5-3956e82276f3/entry/atoi_and_itoa_conversions_in_c_11?lang=en
+
+Write an algorithm to calculate the square root of a number.
+============================================================
+Build the binary search tree from inorder and preorder traversals
+=================================================================
+Algorithm to build Binary Search Tree
+
+i.Take first element in preorder traversal and make root.
+ii.Search for the element in step 1 in inorder traversal.
+iii.Take left part of inorder traversal and repeat step 1 and 2 with next element in preorder traversal as root.
+iv.Take right part of inorder traversal and repeat step 1 and 2 with next element in preorder traversal as root.
+
+Node * create_tree(int inorder[], int preorder[],
+              int startIndex, int endIndex){
+ 
+   static int preIndex =0;
+ 
+   int i =0;
+   if(startIndex > endIndex)
+         return NULL;
+   Node * temp =  (Node *)malloc(sizeof(Node));
+   if(temp){
+       /* Take next preorder element and peg it as root */
+ 
+       temp->value = preorder[preIndex++];
+     if(startIndex == endIndex) return temp ; 
+ 
+      /* Search for the element in inorder traversal */
+      int index = search_inorder(inorder,temp->value,
+                                  startIndex, endIndex);
+ 
+ 
+       /*All elements in left side form left sub tree */
+ 
+       temp->left = create_tree(inorder, preorder,  
+                                startIndex, index-1 );
+        /*All elements in right side form right sub tree */
+        temp->right  = create_tree(inorder, preorder, 
+                                   index+1, endIndex );
+       return temp;
+    }
+    return NULL;
+}
+int search_inorder(int inorder[], int elem, int start, int end){
+ 
+        int i;
+        for(i=start;i<=end; i++){
+                if(inorder[i]== elem)
+                        return i;
+        }
+        return -1;
+}
+=========================================================
+Log file monitoring : Print last N lines of file
+==========================================================
+1.Read each line from file.
+2.If size of queue is less than N, we simply enqueue the line in queue.
+3.If size of queue is greater than N, dequeue line from front and enqueue new line at the end.
+
+#define MAX_SIZE 500
+ 
+typedef struct queue_l{
+        char data[MAX_SIZE];
+        struct queue_l *next;
+        struct queue_l *prev;
+}queue_l;
+ 
+/* Below are the routine function for init queue, enqueue, dequeue, queue_empty etc */
+void init_queue_l(dummy **q){
+        *q  = (dummy *)malloc(sizeof(dummy));
+        if(*q){
+                (*q)->front = NULL;
+                (*q)->tail = NULL;
+                (*q)->size =0;
+        }
+ 
+}
+int is_empty_l(dummy *q){
+        if( q->front == NULL && q->tail == NULL)
+                return true;
+ 
+        return false;
+}
+ 
+queue_l * enqueue_l(dummy *q, char * elem){
+        queue_l *temp = (queue_l *) malloc(sizeof(queue_l));
+        if(temp){
+                strcpy(temp->data, elem);
+                temp->next = NULL;
+                temp->prev = q->tail;
+                if(q->tail){
+                        q->tail->next = temp;
+                }
+                q->tail = temp;
+                if(q->front == NULL)
+                        q->front = temp;
+                q->size++;
+        }
+        return temp;
+}
+ 
+char * dequeue_l(dummy *d){
+ 
+        if(is_empty_l(d)){
+                 printf("\n Queue is empty");
+                 return NULL;
+        }
+ 
+        queue_l *q  = d->front;
+        d->front = q->next;
+        if(q->next)
+                q->next->prev = NULL;
+        else
+                d->tail = NULL;
+ 
+        char * temp = q->data;
+        free(q);
+        d->size--;
+        return temp;
+ 
+}
+ 
+void update_lines(dummy *d, char *s, int n){
+        if(d->size <n){
+                enqueue_l(d, s);
+        }
+        else{
+                dequeue_l(d);
+                enqueue_l(d, s);
+ 
+        }
+}
+
+===========================================================
+Problem: Given a array of repeating numbers, print them in an order so that, 
+the least repeated digit comes first and most repeated digit comes in the last.
+-------------------------------------------------------------
+Solution 1: inplace sorting and printing (complexity: o( N log N) )
+// input:           3,4,5,3,4,6,5,6,7,3,3
+// expected output: 7,6,6,5,5,4,4,3,3,3,3
+ 
+#include <iostream>
+#include <algorithm>
+#include <iterator>
+ 
+using namespace std;
+ 
+int main()
+{
+    int list[11] = {3,4,5,3,4,5,3,6,7,3,3};
+    //int list[11] = {6,4,5,7,7,3,4,5,7,7,3};
+ 
+    const int n = sizeof(list) / sizeof(int);
+ 
+    sort(list, list+n, greater_equal<int>());
+    copy(list, list+n, ostream_iterator<int>(cout, " "));
+}
+Solution 2: using a unordered multimap and ordered multimap ( complexity: o(N)
+ 
+#include <iostream>
+#include <map>
+#include <unordered_map>
+ 
+using namespace std;
+ 
+struct MostFreqFirst_Compare
+{
+    bool operator() (int a, int b) { return a > b; }
+};
+ 
+int main()
+{
+      int list[12] = {3,4,5,3,4,5,3,6,7,3,3,3};
+ 
+      unordered_map<int, int> m1;
+      unordered_map<int, int>::iterator itr;
+      for( int i = 0 ; i < 12; i++)
+      {
+          itr = m1.find(list[i]);
+          if (itr != m1.end())
+              itr->second++;
+          else
+              m1.insert(make_pair<int, int>(list[i],0) );
+      }
+ 
+      cout << "multimap start" << endl;
+ 
+      // now switch the key and value in the whole map
+      //multimap<int, int, MostFreqFirst_Compare> m2;
+      unordered_multimap<int, int> m2;
+ 
+      for(auto itr = m2.begin(); itr != m2.end(); itr++)
+          m2.insert(pair<int, int>(itr->second, itr->first));
+ 
+      for(auto itr = m2.begin(); itr != m2.end(); itr++)
+      {
+          int i = itr->first;
+          while (i-- >= 0)
+              cout << itr->second;
+      }
+}
+===========================================================
+ 

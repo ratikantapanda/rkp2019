@@ -1,0 +1,115 @@
+1.Check a string is palendrum or not.
+---------------------------------------
+bool IsPalindrome(const string& str)
+{
+    if (str.empty())
+        return false;
+
+    int i = 0;                // first characters
+    int j = str.length() - 1; // last character
+
+    while (i < j)
+    {
+        if (str[i] != str[j])
+        {
+            return false;
+        }
+        i++;
+        j--;
+    }
+    return true;
+}
+
+2. Code to find first non repeating character in a string
+-------------------------------------------------------------
+#include <stdio.h>
+#include <string.h>
+ 
+#define NOCHAR 256
+ 
+unsigned char findFirstNonRepeatingCharacter(unsigned char *str){
+	unsigned char * s  = str; 	
+	int hash[NOCHAR];
+ 
+	if(s == NULL || *s == '\0') {
+		printf("\n String provided is null");
+		return '0';
+	}
+ 
+	//Initialize character hash
+	for(int i=0; i<NOCHAR; i++){
+		hash[i] = 0;
+	}
+ 
+ 
+	while(*s != '\0'){
+		hash[*s]++;
+		s++;
+	}
+ 
+	s = str;
+	while(*s != '\0'){
+		if(hash[*s] == 1) return *s;
+		s++;
+	}
+ ============================================
+ 
+ Source
+#include <stdio.h>
+#include <string.h>
+ 
+#define NOCHAR 256
+ 
+unsigned char findFirstNonRepeatingCharacter(unsigned char *str){
+	unsigned char * s  = str; 	
+	int hash[NOCHAR];
+ 
+	if(s == NULL || *s == '\0') {
+		printf("\n String provided is null");
+		return '0';
+	}
+ 
+	//Initialize character hash
+	for(int i=0; i<NOCHAR; i++){
+		hash[i] = 0;
+	}
+ 
+ 
+	while(*s != '\0'){
+		hash[*s]++;
+		s++;
+	}
+ 
+	s = str;
+	while(*s != '\0'){
+		if(hash[*s] == 1) return *s;
+		s++;
+	}
+ 
+	printf("\nThere is no non repeating character");
+	return '0';		
+ 
+}
+ 
+int main(void) {
+	// your code goes here
+	char *s = "abcbcbcbadea";
+ 
+	printf("\n First non repeating character : %c", findFirstNonRepeatingCharacter(s));
+	return 0;
+}
+ 
+
+	printf("\nThere is no non repeating character");
+	return '0';		
+ 
+}
+ 
+int main(void) {
+	// your code goes here
+	char *s = "abcbcbcbadea";
+ 
+	printf("\n First non repeating character : %c", findFirstNonRepeatingCharacter(s));
+	return 0;
+}
+ 

@@ -1,0 +1,151 @@
+1.Find a element from a sorted list
+Binary search algorithm
+===========================
+int binary_search(int a[8], int start, int end, int key){
+ 
+     if(start <= end) {
+        int mid  = start +(end-start)/2
+ 
+        if(a[mid] == key)       return mid;
+ 
+        if(a[mid] < key) {
+             return binary_search(a, mid+1, end, key) ;
+        }
+        else {
+             return binary_search(a, start, mid-1, key) ;
+        }
+     }
+     return -1;
+}
+------
+int binary_search(int a[], int start, int end, int key){
+ 
+ 	 while(start <= end){
+ 	 	int mid  = start +(end-start)/2
+ 	 
+        if(a[mid] == key)       return mid;
+ 
+        if(a[mid] < key)
+             start = mid+1;
+        else
+             end = mid-1 ;
+    }
+     
+    return -1;
+}
+2.Find first instance of a number in sorted array where duplicates are allowed.
+============================================================================
+int first_instance(int a[], int start, int end, int key){
+ 
+     if(start < end) {
+        int mid  = start +(end-start)/2
+ 
+        if(a[mid] == key && a[mid] > a[mid-1]) return mid;
+ 
+        if(a[mid] < key) {
+             return first_instance(a, mid+1, end, key) ;
+        }
+        else {
+             return first_instance(a, start, mid-1, key) ;
+        }
+     }
+     return start;
+}
+3.Find last instance of a number in sorted array if duplicates are allowed
+============================================================================
+int first_instance(int a[], int start, int end, int key){
+ 
+     if(start < end) {
+        int mid  = start +(end-start)/2
+ 
+        if(a[mid] == key && a[mid] < a[mid+1]) return mid;
+ 
+        if(a[mid] <= key) {
+             return first_instance(a, mid+1, end, key) ;
+        }
+        else {
+             return first_instance(a, start, mid-1, key) ;
+        }
+     }
+     return start;
+  }
+  
+  4. Find number of instances of a number in sorted array when duplicates are allowed.
+  ==============================================================
+To find numbers instances just find the first instance and last instance of occurrence and then do last-first + 1.
+5.Searching a pivot in the sorted rotated array
+=========================================
+Implement the following function, FindSortedArrayRotation, which takes as its input an array of unique integers
+that has been sorted in ascending order, then rotated by an unknown amount X where 0 <= X <= (arrayLength – 1). 
+An array rotation by amount X moves every element array[i] to array[(i + X) % arrayLength]. 
+FindSortedArrayRotation discovers and returns X by examining the array.
+Solution:
+This time you have to search for the rotation pivot. 
+There is a subtle observation. This problem is in fact the same as finding the minimum element’s index. 
+If the middle element is greater than the right most element, then the pivot must be to the right; if it is not, the pivot must be to the left.
+
+int FindSortedArrayRotation(int A[], int N) {
+  int L = 0;
+  int R = N - 1;
+ 
+  while (A[L] > A[R]) {
+    int M = L + (R - L) / 2;
+    if (A[M] > A[R])
+      L = M + 1;
+    else
+      R = M;
+  }
+  return L;
+}
+
+6.Find an element in rotated sorted array.
+==========================================
+Suppose a sorted array is rotated at some pivot unknown to you beforehand. (i.e., 0 1 2 4 5 6 7 might become 4 5 6 7 0 1 2). 
+How do you find an element in the rotated array efficiently?At first look, we know that we can do a linear search in O(n) time.
+But linear search does not need the elements to be sorted in any way.
+First, we know that it is a sorted array that’s been rotated. Although we do not know where the rotation pivot is, 
+there is a property we can take advantage of. Here, we make an observation that a rotated array can be classified as 
+two sub-array that is sorted (i.e., 4 5 6 7 0 1 2 consists of two sub-arrays 4 5 6 7 and 0 1 2.
+Do not jump to conclusion that we need  to first find the location of the pivot and then do binary search on both sub-arrays. 
+Although this can be done in O(lg n) time, this is not necessary and is more complicated.
+In fact, we don’t need to know where the pivot is. Look at the middle element (7). Compare it with the left most (4) 
+and right most element (2). The left most element (4) is less than (7). 
+This gives us valuable information — All elements in the bottom half must be in strictly increasing order. Therefore,
+ if the key we are looking for is between 4 and 7, we eliminate the upper half; if not, we eliminate the bottom half.
+When left index is greater than right index, we have to stop searching as the key we are finding is not in the array.
+
+Since we reduce the search space by half each time, the complexity must be in the order of O(lg n). It is similar to binary search 
+but is somehow modified for this problem. In fact, this is more general than binary search, as it works for both rotated and non-rotated arrays.
+Let’s divide the array the array in two parts. There are three cases:
+
+1. Middle element is exactly the rotation point.
+2. Middle element is in the left part, in this case a[mid] > a[end] and a[start] < a[mid]
+3. Middle element is in the right part, in that case a[mid] < a[end] and a[start] > a[mid]
+
+
+int rotated_binary_search(int A[], int N, int key) {
+  int L = 0;
+  int R = N - 1;
+ 
+  while (L <= R) {
+    // Avoid overflow, same as M=(L+R)/2
+    int M = L + ((R - L) / 2);
+    if (A[M] == key) return M;
+ 
+    // the bottom half is sorted
+    if (A[L] <= A[M]) {
+      if (A[L] <= key && key < A[M])
+        R = M - 1;
+      else
+        L = M + 1;
+    }
+    // the upper half is sorted
+    else {
+      if (A[M] < key && key <= A[R])
+        L = M + 1;
+      else
+        R = M - 1;
+    }
+  }
+  return -1;
+}

@@ -1,0 +1,92 @@
+Second highest
+Return the index of the largest and second largest number of an given array
+=======================
+#define arrayLength(array) (sizeof((array))/sizeof((array)[0]))
+void get2ndHighest(int* a1,int len){
+	int highest1=0;
+	int highest2=0;
+	for(int i=0; i <= len;++i){
+		if(a1[i] > highest1){
+			highest2=highest1;
+			highest1=a1[i];
+		} 
+		else if( a1[i] > highest2){
+			highest2=a1[i];
+		} 
+	}
+		printf("The h1=%d,h2=%d",highest1,highest2);
+}
+Find K smallest elements in array
+=================================
+method-1 :- Partial quick sort
+---------------------------------
+void quick_sort(int A[], int start, int end, int K){
+    int p ;
+    if(start <end) {
+        p  =  partition(A, start, end);
+        if(p == K-1){
+            return;
+        }
+        if(part>K-1){
+            quick_sort(A, start,p, K);
+        }
+        else{
+            quick_sort(A, p+1, end, K);
+        }
+    }
+    return;
+}
+Method-2 using heap
+-----------------------
+int left_child(int i){
+    return (i*2)+1;
+}
+int right_child(int i){
+    return (2*i)+2;
+}
+int swap_elements(int a[], int i, int j){
+    int temp = a[i];
+    a[i] = a[j];
+    a[j] = temp;
+}
+/* This function maintains the min heap property of the the given heap */
+void min_heapify(int a[], int i, int len){
+    int smallest;
+    int left, right;
+ 
+    left = left_child(i);
+    right = right_child(i);
+    if(left <= len && a[i]>a[left]){
+        smallest = left;
+    }
+    if(right <= len && a[smallest] > a[right]){
+        smallest = right;
+    }
+    if(smallest != i){
+        swap_elements(a, i, smallest);
+        min_heapify(a, smallest, len);
+    }
+}
+/* This function creates a min heap from a given input array in-place */
+void build_heap(int a[], int len){
+    int i = len/2 +1;
+    for(; i>=0; i--){
+        min_heapify(a,i, len);
+    }
+}
+/* This function deletes the min (root) of min heap and again maintain 
+heap property */
+int delete_min(int a[], int len){
+ 
+    int temp = a[0];
+    a[0] = a[len];
+    heapify(a,0,len);
+ 
+    return temp;
+}
+===========================================================
+1.Find all duplicate numbers in array
+2.Find Leaders in array
+3.Count Inversion in an array
+q.Find missing number in array
+4. Find missing and repeated number in array

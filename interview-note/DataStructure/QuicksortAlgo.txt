@@ -1,0 +1,64 @@
+﻿Sorting
+===================
+Quick Sort:- 
+*****************
+1.Best on divide conquer
+2.When already sorted the worst performance i.e O(n2)
+3.Average case:- O(nlogn)
+4.
+a.Select a pivot and then place it at it’s correct position.
+b.Once pivot is on it’s place, sort left part of the array.
+c. Then sort the right part.
+
+4. Utility function-
+void quick_sort(int A[], int start, int end){
+        int p ; //For pivot index
+        if(start <end) {
+                p =  partition(A, start, end);
+                quick_sort(A, start,p);
+                quick_sort(A, part+1, p);
+        }
+        return;
+}
+5.
+int partition(int a[], int start, int end){
+    i = start+1;
+    j = end;
+    pivot = start;
+ 
+    while(i<j){
+	//i scan from left to right to get first element grater than pivot.
+       while(i<=end && a[i] < a[pivot]){
+              i++;
+        }
+		//j scan from right to left to get first element less than pivot.
+        while(j>=0 && a[j] > a[pivot]){
+            j--;
+        }
+        if(i<j)
+            swap(A[i],A[j])
+    }//End of while
+    swap(a[pivot], a[j]);
+    return j;
+}
+6.Find K smallest elements in array
+Ans:- Use partial quick sort.
+
+void quick_sort(int A[], int start, int end, int K){
+    int p ;
+    if(start <end) {
+        p  =  partition(A, start, end);
+        if(p == K-1){
+            return;//we are ate perfect position.[0..p] are k numbers of elements.
+        }
+        if(p>K-1)
+		{//[0..p] are more than k elements
+            quick_sort(A, start,p, K);//
+        }
+        else//[0..p] are less than k.
+		{
+            quick_sort(A, p+1, end, K);
+        }
+    }
+    return;
+}
